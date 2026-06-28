@@ -6,7 +6,12 @@
 // token expiry by hitting WHOOP's refresh endpoint.
 // ============================================================
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin',  '*');
+  // Only the dashboard's own origin may use this proxy (no '*').
+  const proto = (req.headers['x-forwarded-proto'] || 'https').split(',')[0];
+  const host  = req.headers['x-forwarded-host'] || req.headers.host;
+  const origin = req.headers.origin;
+  if (origin && origin === proto + '://' + host) res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(204).end();

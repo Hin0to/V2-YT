@@ -6,17 +6,18 @@
 //   syncedPrefixes — localStorage key prefixes to mirror (e.g. 'goals:')
 //   onApplied      — optional callback after remote state has been applied
 //
-// Requires:
-//   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-//   <script src="sync.js" defer></script>
+// All cloud access goes through the first-party /api/state proxy, which
+// holds the Supabase service_role key SERVER-SIDE. No Supabase key ships
+// to the browser, and the whole site sits behind Basic Auth. There is no
+// realtime websocket anymore; instead we pull on load and whenever the
+// tab regains focus (good enough for a single-user dashboard).
+//
+// Just include it: <script src="sync.js" defer></script>
 // =============================================================
 (function () {
   'use strict';
 
-  // Prefer Vercel env vars (served via /api/config → window.DASH_*),
-  // otherwise fall back to these defaults.
-  const SUPABASE_URL = (typeof window !== 'undefined' && window.DASH_SUPABASE_URL) || 'https://srajryooffirbroltjmg.supabase.co';
-  const SUPABASE_KEY = (typeof window !== 'undefined' && window.DASH_SUPABASE_KEY) || 'sb_publishable_5142ZwTLF_DkSVRzciNuRA_bHwRAu4c';
+  const STATE_URL = '/api/state';
 
   window.initCloudSync = function (config) {
     const appKey = config && config.appKey;
@@ -24,11 +25,7 @@
     const syncedPrefixes = (config && config.syncedPrefixes) || [];
     const onApplied = config && config.onApplied;
     if (!appKey) return;
-    if (!window.supabase) return;
-    if (!SUPABASE_URL || !SUPABASE_KEY) return;
-    if (SUPABASE_URL.indexOf('PASTE-') === 0 || SUPABASE_KEY.indexOf('PASTE-') === 0) return;
 
-    let supa = null;
     let pushTimer = null;
     let suppressSync = false;
     let lastSyncedJson = null;
@@ -95,17 +92,34 @@
       return changed;
     }
 
+    async function pull() {
+      try {
+        const r = await fetch(STATE_URL + '?key=' + encodeURIComponent(appKey), {
+          headers: { 'Accept': 'application/json' },
+        });
+        if (!r.ok) return;
+        const j = await r.json();
+        const remote = j && j.data;
+        if (remote && typeof remote === 'object' && Object.keys(remote).length > 0) {
+          const incoming = JSON.stringify(remote);
+          if (incoming === lastSyncedJson) return;
+          lastSyncedJson = incoming;
+          applyRemote(remote);
+        }
+      } catch (e) {}
+    }
+
     async function pushNow() {
-      if (!supa) return;
       const state = collect();
       const json = JSON.stringify(state);
       if (json === lastSyncedJson) return;
       try {
-        const { error } = await supa.from('app_state').upsert(
-          { key: appKey, data: state, updated_at: new Date().toISOString() },
-          { onConflict: 'key' }
-        );
-        if (!error) lastSyncedJson = json;
+        const r = await fetch(STATE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: appKey, data: state }),
+        });
+        if (r.ok) lastSyncedJson = json;
       } catch (e) {}
     }
     function schedulePush() {
@@ -117,15 +131,10 @@
       const json = JSON.stringify(state);
       if (json === lastSyncedJson) return;
       try {
-        fetch(SUPABASE_URL + '/rest/v1/app_state?on_conflict=key', {
+        fetch(STATE_URL, {
           method: 'POST',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY,
-            'Content-Type': 'application/json',
-            'Prefer': 'resolution=merge-duplicates',
-          },
-          body: JSON.stringify({ key: appKey, data: state, updated_at: new Date().toISOString() }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: appKey, data: state }),
           keepalive: true,
         }).catch(() => {});
         lastSyncedJson = json;
@@ -133,31 +142,10 @@
     }
 
     (async function init() {
-      supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      try {
-        const { data, error } = await supa
-          .from('app_state').select('data').eq('key', appKey).maybeSingle();
-        if (!error && data && data.data && Object.keys(data.data).length > 0) {
-          lastSyncedJson = JSON.stringify(data.data);
-          applyRemote(data.data);
-        } else if (Object.keys(collect()).length > 0) {
-          schedulePush();
-        }
-      } catch (e) {}
-      supa.channel('app_state_' + appKey)
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'app_state',
-          filter: 'key=eq.' + appKey,
-        }, (payload) => {
-          if (!payload.new || !payload.new.data) return;
-          const incoming = JSON.stringify(payload.new.data);
-          if (incoming === lastSyncedJson) return;
-          lastSyncedJson = incoming;
-          applyRemote(payload.new.data);
-        })
-        .subscribe();
+      await pull();
+      if (lastSyncedJson === null && Object.keys(collect()).length > 0) {
+        schedulePush();
+      }
     })();
 
     window.addEventListener('beforeunload', flushOnUnload);
@@ -165,5 +153,8 @@
     window.addEventListener('storage', (e) => {
       if (e.key && matches(e.key)) schedulePush();
     });
+    // No realtime socket — pull the latest whenever we come back to the tab.
+    window.addEventListener('focus', pull);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) pull(); });
   };
 })();

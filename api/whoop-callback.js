@@ -16,6 +16,16 @@ export default async function handler(req, res) {
   if (errorParam) return res.status(400).send('WHOOP auth error: ' + errorParam);
   if (!code) return res.status(400).send('Missing code parameter.');
 
+  // CSRF: the state we sent (cookie from /api/whoop-authorize) must match
+  // the state WHOOP echoed back. Clear the one-time cookie either way.
+  const state = req.query && req.query.state;
+  const m = (req.headers.cookie || '').match(/(?:^|; )whoop_oauth_state=([^;]+)/);
+  const cookieState = m && m[1];
+  res.setHeader('Set-Cookie', 'whoop_oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0');
+  if (!state || !cookieState || state !== cookieState) {
+    return res.status(400).send('WHOOP state mismatch — please connect again.');
+  }
+
   const clientId     = process.env.WHOOP_CLIENT_ID;
   const clientSecret = process.env.WHOOP_CLIENT_SECRET;
   // ALWAYS derive the redirect from the live host. WHOOP sends the browser

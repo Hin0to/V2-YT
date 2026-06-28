@@ -1,0 +1,93 @@
+/* ============================================================
+   Shared dashboard theme — editorial / Swiss, warm light canvas
+   that sinks into dark, oversized grotesk display + mono labels,
+   one coral signal accent. Load FIRST on every page:
+     <link rel="stylesheet" href="theme.css">
+   Then each page's own <style> consumes these tokens.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+:root{
+  /* light surfaces */
+  --ink:#1A1714; --muted:#6E6A62; --faint:#AAA49A;
+  --line:rgba(0,0,0,.13); --line-2:rgba(0,0,0,.07);
+  --paper-0:#F4F0E7; --paper-1:#EFEADF; --paper-2:#E7E0D4;
+  --raise:rgba(255,255,255,.5);
+  /* dark zone (footers / .on-dark sections sitting on the gradient end) */
+  --inkD:#F2EFE8; --mutedD:#9C968B; --lineD:rgba(255,255,255,.12); --panelD:#1B1813;
+  /* signal */
+  --accent:#E0512A; --accent-soft:rgba(224,81,42,.12);
+  /* type */
+  --sans:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"Space Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --app-bg:linear-gradient(178deg,#F4F0E7 0%,#EFEADF 55%,#E7E0D4 100%);
+}
+
+*{box-sizing:border-box}
+html{background:#E7E0D4}
+body{
+  margin:0; color:var(--ink); font-family:var(--sans);
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  -webkit-text-size-adjust:100%;
+  background:var(--app-bg); background-attachment:fixed; min-height:100vh;
+}
+
+/* ---- editorial primitives ---- */
+.mono{font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em}
+.kicker{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.18em;color:var(--muted)}
+.kicker .idx,.accent{color:var(--accent)}
+.display{font-weight:700;line-height:.9;letter-spacing:-.035em;text-transform:uppercase}
+.display .thin{color:var(--faint);font-weight:400}
+
+/* section header: 01 — TITLE ———— meta */
+.sec-h{display:flex;align-items:baseline;gap:14px;margin:34px 0 18px}
+.sec-h .n{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.sec-h h2{font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.16em;margin:0;color:var(--ink)}
+.sec-h .rule{flex:1;height:1px;background:var(--line)}
+.sec-h .meta{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+
+/* hairline ticker (continuous) */
+.ticker{overflow:hidden;border-block:1px solid var(--line);padding:11px 0;white-space:nowrap}
+.ticker-track{display:inline-block;animation:tk-scroll 28s linear infinite;font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.ticker:hover .ticker-track{animation-play-state:paused}
+.ticker-track .on{color:var(--ink)} .ticker-track .sep{color:var(--accent);margin:0 18px}
+@keyframes tk-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* breathing live/sync dot */
+.pd{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;animation:tk-breathe 1.8s ease-in-out infinite}
+@keyframes tk-breathe{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.6)}}
+
+/* dark zone on the gradient's dark end */
+.on-dark{color:var(--inkD)}
+.on-dark h2,.on-dark .sec-h h2{color:var(--inkD)}
+.on-dark .sec-h .rule{background:var(--lineD)}
+.on-dark .sec-h .meta,.on-dark .muted{color:var(--mutedD)}
+
+/* ---- animation hooks (driven by anim.js) ---- */
+.reveal{opacity:0;transform:translateY(16px)}
+.reveal.in{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
+.stagger>*{opacity:0;transform:translateY(10px)}
+.stagger>.in{opacity:1;transform:none;transition:opacity .5s,transform .5s}
+[data-ring]{transition:stroke-dashoffset 1.2s cubic-bezier(.3,1,.3,1)}
+[data-fill]{transition:width 1s cubic-bezier(.34,1.3,.5,1)}
+
+/* satisfying check-off — page adds the class it already uses; we animate it.
+   Mark a tickable row with .tick and its checkbox box with .tick-box. */
+.tick-box{position:relative;transition:background .2s,border-color .2s,transform .2s}
+.tick.done .tick-box{background:var(--accent);border-color:var(--accent);transform:scale(1.08)}
+.tick .tick-label{position:relative}
+.tick .tick-label::after{content:"";position:absolute;left:0;top:50%;height:1.5px;width:0;background:currentColor;opacity:.5;transition:width .3s ease}
+.tick.done .tick-label::after{width:100%}
+
+/* page-transition wipe overlay (injected by anim.js) */
+#pgwipe{position:fixed;inset:0;background:var(--accent);transform:scaleY(0);transform-origin:bottom;z-index:9999;pointer-events:none}
+#pgwipe.in{transform:scaleY(1);transform-origin:bottom;transition:transform .42s cubic-bezier(.7,0,.3,1)}
+#pgwipe.out{transform:scaleY(0);transform-origin:top;transition:transform .42s cubic-bezier(.7,0,.3,1)}
+
+/* tidy scrollbar */
+::-webkit-scrollbar{width:0;height:0}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .reveal,.stagger>*{opacity:1!important;transform:none!important}
+}

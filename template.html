@@ -2,302 +2,242 @@
 <html lang="en">
 <head>
 <!-- ============================================================= -->
-<!--  DASHBOARD SECTION TEMPLATE                                    -->
+<!--  DASHBOARD SECTION TEMPLATE  (editorial system)               -->
 <!--                                                                -->
 <!--  Copy this file to start a new page, OR copy one of the        -->
 <!--  "card" blocks below into an existing page to add a section.   -->
-<!--  Everything here uses the same colors, fonts, glass cards and  -->
+<!--  Everything here uses the shared theme.css tokens, fonts and   -->
 <!--  cloud-sync as the rest of the dashboard, so anything you      -->
 <!--  build will automatically match the design.                    -->
 <!--                                                                -->
 <!--  QUICK START                                                   -->
-<!--   1. Rename the <title> below.                                 -->
+<!--   1. Rename the <title> and the .title below.                  -->
 <!--   2. Find the block marked "COPY FROM HERE" and duplicate it   -->
 <!--      to make as many sections as you want.                     -->
 <!--   3. Give each section its own SECTION_ID (see the script at   -->
 <!--      the bottom) so it saves + syncs independently.            -->
+<!--                                                                -->
+<!--  DESIGN: editorial / Swiss. Use the .sec-h section header      -->
+<!--  pattern, mono indices ("01"), oversized grotesk titles, the   -->
+<!--  coral var(--accent), and hairline var(--line) rules. Add      -->
+<!--  .reveal / .stagger / data-count hooks for the scroll          -->
+<!--  animations (engine = anim.js).                                -->
 <!-- ============================================================= -->
-<script src="lock.js"></script>                                  <!-- passcode lock screen -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#050506">
+<meta name="theme-color" content="#F4F0E7">
 <title>New Section · Dashboard</title>
 
+<!-- Shared dashboard theme FIRST, then this page's own <style>. -->
+<link rel="stylesheet" href="theme.css">
+
 <!-- Shared dashboard scripts. Keep these in this order. -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="sync.js" defer></script>     <!-- cloud sync across devices -->
 <script src="topbar.js" defer></script>   <!-- top water bar + bottom tab nav -->
+<script src="anim.js" defer></script>     <!-- scroll reveals, count-ups, ticks -->
 
 <style>
 /* ============================================================= */
-/*  DESIGN SYSTEM — these are the dashboard's shared tokens.      */
-/*  Don't change these if you want your section to match the      */
-/*  other pages. Use the variables (var(--text-primary), etc.)    */
-/*  instead of hard-coding colors.                                */
+/*  PAGE STYLES — consume the shared tokens from theme.css        */
+/*  (var(--ink), var(--muted), var(--accent), var(--line), …).    */
+/*  Don't redefine colors here; the warm gradient canvas lives    */
+/*  on <body> in theme.css. Keep the .page wrapper for centering. */
 /* ============================================================= */
-:root {
-  --text-primary: #FAFAFA;   /* headings, key numbers   */
-  --text-secondary: #B8B6B0; /* body text               */
-  --text-tertiary: #76746E;  /* labels, captions, hints */
-  --success: #6BE3A4;        /* green  — done / good    */
-  --warning: #F2C063;        /* amber  — caution        */
-  --danger:  #FF6B6B;        /* red    — bad / delete   */
-  --font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
+.page { max-width: 1100px; margin: 0 auto; padding: 30px 36px 96px; }
+@media (max-width: 560px) { .page { padding: 24px 18px 96px; } }
 
-* { box-sizing: border-box; }
-html, body {
-  margin: 0; padding: 0;
-  background: #050506;
-  color: var(--text-secondary);
-  font-family: var(--font);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+/* Big editorial page title (oversized uppercase grotesk). */
+.title {
+  font-family: var(--sans);
+  font-size: clamp(40px, 8vw, 88px);
+  font-weight: 700; line-height: .9; letter-spacing: -.035em;
+  text-transform: uppercase; color: var(--ink);
+  margin: 18px 0 0;
 }
-body {
-  min-height: 100vh;
-  position: relative;
-  overflow-x: hidden;
-  padding: max(28px, env(safe-area-inset-top)) 20px 60px;
-}
-/* Soft drifting color glow behind everything. */
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background:
-    radial-gradient(circle at 82% 14%, rgba(224, 118, 88, 0.16), transparent 45%),
-    radial-gradient(circle at 18% 90%, rgba(180, 180, 200, 0.06), transparent 50%);
-  filter: blur(40px);
-  pointer-events: none;
-  z-index: -2;
-  animation: drift 36s ease-in-out infinite alternate;
-}
-/* Faint dot texture. */
-body::after {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: radial-gradient(rgba(255,255,255,0.014) 1px, transparent 1px);
-  background-size: 3px 3px;
-  pointer-events: none;
-  z-index: -1;
-}
-@keyframes drift {
-  0%   { transform: translate3d(0,0,0); }
-  100% { transform: translate3d(-22px, 14px, 0); }
-}
+.title .thin { color: var(--faint); font-weight: 400; }
 
-.page { max-width: 1100px; margin: 0 auto; }
-
-/* Big gradient page title. */
-.dash-title {
-  margin: 0 0 14px;
-  font-size: 28px; font-weight: 700;
-  letter-spacing: -0.025em;
-  background: linear-gradient(180deg, #FFFFFF 0%, #C7C4BC 120%);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: transparent;
-}
-@media (max-width: 480px) { .dash-title { font-size: 22px; } }
-
-/* Small uppercase section heading with a divider line. */
-.section { margin-top: 8px; }
-.section-title {
-  font-size: 10.5px; font-weight: 700;
-  letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--text-tertiary);
-  display: flex; align-items: center; gap: 12px;
-  margin-bottom: 12px;
-}
-.section-title::before {
-  content: ''; width: 18px; height: 1px;
-  background: var(--text-tertiary); opacity: 0.6;
-}
-.section-title::after {
-  content: ''; flex: 1; height: 1px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.08), transparent);
-}
-
-/* THE GLASS CARD — the main building block. Wrap any section in this. */
+/* THE CARD — flat, hairline-bordered, small radius. Main block. */
 .gm-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--raise);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 22px;
   margin-bottom: 14px;
-  backdrop-filter: blur(24px) saturate(1.2);
-  -webkit-backdrop-filter: blur(24px) saturate(1.2);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
-  overflow: hidden;
 }
 
 /* Card header: an eyebrow label + a big number. */
 .gm-header {
   display: flex; align-items: flex-start; justify-content: space-between;
-  flex-wrap: wrap; gap: 12px; margin-bottom: 14px;
+  flex-wrap: wrap; gap: 12px; margin-bottom: 18px;
 }
 .gm-header-left { display: flex; flex-direction: column; }
 .gm-eyebrow {
-  font-size: 10.5px; font-weight: 700;
-  letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--text-tertiary); margin-bottom: 6px;
+  font-family: var(--mono);
+  font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: .18em; color: var(--muted); margin-bottom: 8px;
 }
 .gm-progress-row { display: flex; align-items: baseline; gap: 6px; }
 .gm-progress-num {
-  font-size: 42px; font-weight: 700;
+  font-family: var(--sans);
+  font-size: 52px; font-weight: 700;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.045em; color: var(--text-primary); line-height: 1;
+  letter-spacing: -.045em; color: var(--ink); line-height: .9;
 }
-.gm-progress-total { font-family: var(--font-mono); font-size: 18px; color: var(--text-tertiary); }
+.gm-progress-total { font-family: var(--mono); font-size: 18px; color: var(--faint); }
 .gm-progress-label {
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 0.10em; text-transform: uppercase;
-  color: var(--text-tertiary); margin-left: 4px;
+  font-family: var(--mono);
+  font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: .16em; color: var(--muted); margin-left: 6px;
 }
 
-/* A little rounded "pill" — handy for streaks, tags, statuses. */
+/* A little squared "pill" — handy for streaks, tags, statuses. */
 .gm-streak {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 12px; border-radius: 999px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.06);
-  color: var(--text-tertiary);
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 0.10em; text-transform: uppercase;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 12px; border-radius: 2px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em;
 }
 
 /* Stat grid — a row of metrics. Auto-wraps on small screens. */
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 12px;
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
 }
 .stat {
-  background: rgba(255,255,255,0.035);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 12px; padding: 14px;
+  padding: 16px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 .stat-num {
-  font-size: 26px; font-weight: 700;
+  font-family: var(--sans);
+  font-size: 30px; font-weight: 700;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em; color: var(--text-primary); line-height: 1;
+  letter-spacing: -.03em; color: var(--ink); line-height: 1;
 }
 .stat-label {
-  margin-top: 6px;
-  font-size: 10.5px; font-weight: 600;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--text-tertiary);
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 9.5px; text-transform: uppercase;
+  letter-spacing: .12em; color: var(--muted);
 }
 
 /* List rows with a checkbox + editable text + delete button. */
 .goal-list { list-style: none; margin: 0; padding: 0; }
 .empty-state {
-  text-align: center; font-size: 12px; font-style: italic;
-  color: var(--text-tertiary); padding: 14px 0;
+  font-family: var(--mono);
+  text-align: center; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .12em; color: var(--faint); padding: 16px 0;
 }
 .gm-row {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 14px; margin-bottom: 6px;
-  background: rgba(255,255,255,0.035);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 12px;
-  transition: background 0.2s, opacity 0.3s;
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--line);
+  transition: opacity .3s, background .2s;
 }
-.gm-row:hover { background: rgba(255,255,255,0.06); }
-.gm-row.gm-row-done { opacity: 0.45; background: rgba(107,227,164,0.04); }
+.gm-row:hover { background: var(--raise); }
+.gm-row.gm-row-done { opacity: .5; }
 .gm-row.gm-row-done .gm-text {
-  text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.4);
+  text-decoration: line-through; text-decoration-color: var(--faint);
 }
+/* Checkbox box — squared, fills coral when checked. Also wired to
+   the .tick-box animation hook in theme.css. */
 .gm-check {
   appearance: none; -webkit-appearance: none;
-  width: 22px; height: 22px; flex-shrink: 0; margin: 0;
-  border: 1.5px solid rgba(255,255,255,0.18);
-  background: rgba(0,0,0,0.28); border-radius: 7px;
+  width: 20px; height: 20px; flex-shrink: 0; margin: 0;
+  border: 1.5px solid var(--line);
+  background: transparent; border-radius: 3px;
   position: relative; cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, box-shadow 0.25s;
+  transition: background .2s, border-color .2s, transform .2s;
 }
 .gm-check:checked {
-  background: var(--success); border-color: var(--success);
-  box-shadow: 0 0 12px rgba(107,227,164,0.40);
+  background: var(--accent); border-color: var(--accent);
 }
 .gm-check:checked::after {
   content: ''; position: absolute; left: 6px; top: 2px;
-  width: 6px; height: 11px;
-  border: solid #0A0A0B; border-width: 0 2.5px 2.5px 0;
+  width: 5px; height: 10px;
+  border: solid #fff; border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
 .gm-text {
-  flex: 1; font-size: 14px; color: var(--text-primary);
-  outline: none; border-radius: 4px; padding: 2px 4px; margin: -2px -4px;
+  flex: 1; font-family: var(--sans);
+  font-size: 15px; color: var(--ink);
+  outline: none; border-radius: 2px; padding: 2px 4px; margin: -2px -4px;
 }
-.gm-text[contenteditable="true"] {
-  outline: 1px solid rgba(255,255,255,0.18); background: rgba(0,0,0,0.28);
+.gm-text[contenteditable="true"]:focus {
+  outline: 1px solid var(--accent); background: var(--raise);
 }
 .goal-delete {
-  border: 0; background: transparent; color: var(--text-tertiary);
+  border: 0; background: transparent; color: var(--faint);
+  font-family: var(--mono);
   font-size: 18px; cursor: pointer; padding: 0 4px;
-  opacity: 0.5; transition: opacity 0.2s, color 0.2s;
+  opacity: .5; transition: opacity .2s, color .2s;
 }
 .gm-row:hover .goal-delete { opacity: 1; }
-.goal-delete:hover { color: var(--danger); }
+.goal-delete:hover { color: var(--accent); }
 
 /* Add-item input row + buttons. */
 .gm-input-wrap {
   display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
-  margin-top: 14px; padding-top: 14px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
 .gm-input {
   flex: 1; min-width: 0;
-  padding: 11px 14px;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px; background: rgba(0,0,0,0.28);
-  color: var(--text-primary);
-  font-family: inherit; font-size: 14px; outline: none;
-  transition: border-color 0.2s, background 0.2s;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px; background: transparent;
+  color: var(--ink);
+  font-family: var(--mono); font-size: 13px; outline: none;
+  transition: border-color .2s;
 }
-.gm-input::placeholder { color: var(--text-tertiary); }
-.gm-input:focus { border-color: rgba(255,255,255,0.28); background: rgba(0,0,0,0.36); }
+.gm-input::placeholder { color: var(--faint); text-transform: uppercase; letter-spacing: .08em; }
+.gm-input:focus { border-color: var(--accent); }
 
-/* Primary (light) button. */
+/* Primary (coral) button. */
 .gm-add {
-  padding: 11px 20px; border: 0; border-radius: 12px;
-  background: linear-gradient(180deg, #FFFFFF 0%, #E8E5DD 100%);
-  color: #0A0A0B; font-family: inherit; font-size: 13px; font-weight: 700;
+  padding: 12px 22px; border: 0; border-radius: 3px;
+  background: var(--accent);
+  color: #fff; font-family: var(--mono);
+  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em;
   cursor: pointer;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.9),
-    0 2px 8px rgba(0,0,0,0.35),
-    0 8px 22px rgba(0,0,0,0.25);
-  transition: transform 0.1s, filter 0.15s;
+  transition: filter .15s, transform .1s;
 }
-.gm-add:hover { filter: brightness(1.06); transform: translateY(-1px); }
-.gm-add:active { transform: translateY(0); }
+.gm-add:hover { filter: brightness(1.06); }
+.gm-add:active { transform: translateY(1px); }
 
 /* Secondary (ghost) button. */
 .gm-ghost {
-  padding: 11px 18px;
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 12px; background: rgba(255,255,255,0.04);
-  color: var(--text-primary);
-  font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  padding: 12px 20px;
+  border: 1px solid var(--line);
+  border-radius: 3px; background: transparent;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
 }
-.gm-ghost:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.18); }
+.gm-ghost:hover { background: var(--raise); border-color: var(--ink); }
 
 @media (max-width: 480px) {
-  body { padding: max(20px, env(safe-area-inset-top)) 14px 50px; }
-  .gm-card { padding: 16px; }
-  .gm-progress-num { font-size: 36px; }
+  .gm-card { padding: 18px; }
+  .gm-progress-num { font-size: 42px; }
 }
 </style>
 </head>
 <body>
 <div class="page">
 
-  <!-- Page title. Rename this. -->
-  <h1 class="dash-title">New Section</h1>
+  <!-- Hero / page title. Rename this. -->
+  <section class="hero reveal">
+    <div class="kicker"><span class="idx">[00]</span> &nbsp; NEW SECTION &nbsp; / &nbsp; DASHBOARD</div>
+    <h1 class="title">New<br><span class="thin">Section.</span></h1>
+  </section>
 
 
   <!-- =========================================================== -->
@@ -305,26 +245,26 @@ body::after {
   <!--  A header number plus a row of metrics. Pure HTML, no JS.    -->
   <!--  COPY FROM HERE ↓                                            -->
   <!-- =========================================================== -->
-  <div class="section">
-    <div class="section-title">Overview</div>
+  <div class="section reveal">
+    <div class="sec-h"><span class="n">01</span><h2>Overview</h2><div class="rule"></div><span class="meta">This week</span></div>
     <div class="gm-card">
       <div class="gm-header">
         <div class="gm-header-left">
           <div class="gm-eyebrow">This Week</div>
           <div class="gm-progress-row">
-            <span class="gm-progress-num">87</span>
+            <span class="gm-progress-num" data-count="87">87</span>
             <span class="gm-progress-total">/ 100</span>
             <span class="gm-progress-label">score</span>
           </div>
         </div>
-        <span class="gm-streak">🔥 5 day streak</span>
+        <span class="gm-streak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>5 day streak</span>
       </div>
 
-      <div class="stat-grid">
-        <div class="stat"><div class="stat-num">12</div><div class="stat-label">Workouts</div></div>
-        <div class="stat"><div class="stat-num">7.4h</div><div class="stat-label">Avg Sleep</div></div>
+      <div class="stat-grid stagger">
+        <div class="stat"><div class="stat-num"><span data-count="12">12</span></div><div class="stat-label">Workouts</div></div>
+        <div class="stat"><div class="stat-num"><span data-count="7.4" data-dec="1">7.4</span><small>h</small></div><div class="stat-label">Avg Sleep</div></div>
         <div class="stat"><div class="stat-num">2.1k</div><div class="stat-label">Calories</div></div>
-        <div class="stat"><div class="stat-num">94%</div><div class="stat-label">Hydration</div></div>
+        <div class="stat"><div class="stat-num"><span data-count="94">94</span><small>%</small></div><div class="stat-label">Hydration</div></div>
       </div>
     </div>
   </div>
@@ -337,8 +277,8 @@ body::after {
   <!--  is saved to this browser AND synced to your other devices.  -->
   <!--  COPY FROM HERE ↓                                            -->
   <!-- =========================================================== -->
-  <div class="section">
-    <div class="section-title">My List</div>
+  <div class="section reveal">
+    <div class="sec-h"><span class="n">02</span><h2>My List</h2><div class="rule"></div><span class="meta">Synced</span></div>
     <div class="gm-card">
       <ul class="goal-list" id="itemList"></ul>
 
@@ -369,7 +309,7 @@ body::after {
 (function () {
   'use strict';
 
-  // 👇 Change this when you copy the block to make a new section.
+  // NOTE: Change this when you copy the block to make a new section.
   const SECTION_ID = 'template_list';
 
   const STORE_KEY = 'tpl:' + SECTION_ID; // localStorage key for this list
@@ -404,12 +344,15 @@ body::after {
 
     items.forEach(function (item, i) {
       const li = document.createElement('li');
-      li.className = 'gm-row' + (item.done ? ' gm-row-done' : '');
+      // Keep gm-row / gm-row-done (the JS hooks) AND add .tick so the
+      // theme.css check-off animation fires. theme.css animates on .done,
+      // so mirror the done state onto that class too.
+      li.className = 'gm-row tick' + (item.done ? ' gm-row-done done' : '');
 
       // checkbox
       const cb = document.createElement('input');
       cb.type = 'checkbox';
-      cb.className = 'gm-check';
+      cb.className = 'gm-check tick-box';
       cb.checked = !!item.done;
       cb.addEventListener('change', function () {
         const list = load(); list[i].done = cb.checked; save(list); render();
@@ -417,7 +360,7 @@ body::after {
 
       // editable text
       const txt = document.createElement('div');
-      txt.className = 'gm-text';
+      txt.className = 'gm-text tick-label';
       txt.textContent = item.text;
       txt.contentEditable = 'true';
       txt.addEventListener('blur', function () {
@@ -464,7 +407,7 @@ body::after {
   // the list when an update arrives from another device.
   if (window.initCloudSync) {
     window.initCloudSync({
-      appKey: 'template',          // 👈 unique per page (e.g. 'reading', 'habits')
+      appKey: 'template',          // <-- unique per page (e.g. 'reading', 'habits')
       syncedKeys: [STORE_KEY],     // exact localStorage keys to sync
       // syncedPrefixes: ['tpl:'], // …or sync every key starting with a prefix
       onApplied: render
@@ -475,34 +418,45 @@ body::after {
 
 <!--
   ╔══════════════════════════════════════════════════════════════╗
-  ║  CHEAT SHEET — building blocks you can copy anywhere           ║
+  ║  CHEAT SHEET — editorial building blocks you can copy anywhere ║
   ╠══════════════════════════════════════════════════════════════╣
-  ║  Section heading:                                              ║
-  ║    <div class="section-title">My Heading</div>                 ║
+  ║  Section header (01 — TITLE ———— meta):                        ║
+  ║    <div class="sec-h"><span class="n">01</span>                ║
+  ║      <h2>My Heading</h2><div class="rule"></div>               ║
+  ║      <span class="meta">note</span></div>                      ║
   ║                                                                ║
-  ║  Glass card wrapper:                                           ║
+  ║  Card wrapper:                                                 ║
   ║    <div class="gm-card"> …your content… </div>                 ║
   ║                                                                ║
-  ║  Big number / KPI:                                             ║
-  ║    <span class="gm-progress-num">42</span>                     ║
+  ║  Big number / KPI (counts up on scroll-in):                    ║
+  ║    <span class="gm-progress-num" data-count="42">42</span>     ║
   ║                                                                ║
   ║  Metric tiles:                                                 ║
-  ║    <div class="stat-grid">                                     ║
-  ║      <div class="stat"><div class="stat-num">7</div>           ║
+  ║    <div class="stat-grid stagger">                             ║
+  ║      <div class="stat"><div class="stat-num">                  ║
+  ║        <span data-count="7">7</span></div>                     ║
   ║        <div class="stat-label">Label</div></div>               ║
   ║    </div>                                                      ║
   ║                                                                ║
-  ║  Pill / tag:   <span class="gm-streak">🔥 Tag</span>           ║
+  ║  Pill / tag:   <span class="gm-streak"><svg.../>Tag</span>     ║
   ║  Buttons:      <button class="gm-add">Primary</button>         ║
   ║                <button class="gm-ghost">Secondary</button>     ║
   ║  Input:        <input class="gm-input" placeholder="…">        ║
   ║                                                                ║
-  ║  Colors (use the variables, never hard-code):                  ║
-  ║    var(--text-primary)   bright text / numbers                 ║
-  ║    var(--text-secondary) normal text                           ║
-  ║    var(--text-tertiary)  labels / hints                        ║
-  ║    var(--success)        green   var(--warning) amber          ║
-  ║    var(--danger)         red                                   ║
+  ║  Animation hooks (engine = anim.js):                          ║
+  ║    .reveal            block fades + rises on scroll-in         ║
+  ║    .stagger           its children reveal in sequence          ║
+  ║    data-count="68"    number counts up (data-dec="1" → 1 dp)   ║
+  ║    .tick/.tick-box/.tick-label  satisfying check-off           ║
+  ║                                                                ║
+  ║  Colors — use the theme.css tokens, never hard-code:           ║
+  ║    var(--ink)     headings / key numbers                       ║
+  ║    var(--muted)   labels / hints                               ║
+  ║    var(--faint)   faint captions                               ║
+  ║    var(--accent)  the one coral signal accent (#E0512A)        ║
+  ║    var(--line)    hairline rules / borders                     ║
+  ║  On the dark gradient end add class .on-dark and use           ║
+  ║    var(--inkD) / var(--mutedD) / var(--lineD) / var(--panelD)  ║
   ╚══════════════════════════════════════════════════════════════╝
 -->
 </body>

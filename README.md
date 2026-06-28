@@ -21,7 +21,10 @@ Open any `.html` file directly in your browser — no build step, no install.
 | [gym.html](gym.html) | Progressive overload gym tracker |
 | [topbar.js](topbar.js) | Shared top bar — auto-injected into pages that `<script src="topbar.js">` |
 
-Each app stores its own state in browser `localStorage`. No accounts, no server.
+Each app stores its own state in browser `localStorage` and syncs through small serverless
+API routes (`/api/*`). The whole site is **password-protected** (HTTP Basic Auth via
+`middleware.js`) and all secrets live in server-side env vars — see [SETUP.md](SETUP.md)
+for the required environment variables (login, Supabase, Anthropic, WHOOP).
 
 ## Building from scratch
 
