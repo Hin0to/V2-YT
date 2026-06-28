@@ -22,13 +22,15 @@ the browser.
    | `DASHBOARD_USER` | any username you want |
    | `DASHBOARD_PASS` | a strong password |
 
-5. **Deploy.** Visit the URL — the browser will pop up a login box. Enter the user/pass
-   above. It's remembered until you quit the browser.
+5. **Deploy.** Visit the URL — you'll land on a styled **login page**. Enter the user/pass
+   above; you stay signed in for 7 days (an HttpOnly cookie), or hit **Log out** in Settings.
 
 > If `DASHBOARD_USER`/`DASHBOARD_PASS` are not set, the site stays **locked** (returns a
 > 503) on purpose — it never accidentally goes public.
 
-The gate is `middleware.js`, which runs in front of **every** page and API route.
+The gate is `middleware.js` (runs before **every** page + API route); it redirects to
+`/login.html`, which posts to `/api/login` and sets a cookie signed with your password —
+no extra secret to configure.
 
 ---
 

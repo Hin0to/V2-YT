@@ -81,6 +81,8 @@
 .whoop-stat .l{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--mutedD);margin-top:6px}
 .whoop-btn{width:100%;margin-top:14px;padding:12px;border:1px solid var(--lineD);background:transparent;color:var(--mutedD);font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .15s,color .15s}
 .whoop-btn:hover{background:rgba(255,255,255,.05);color:var(--inkD)}
+.logout-link{display:block;text-align:center;margin-top:22px;padding-top:18px;border-top:1px solid var(--lineD);font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--mutedD);text-decoration:none}
+.logout-link:hover{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -228,6 +230,8 @@
       </div>
       <button class="whoop-btn" id="whAction" type="button">Sync now</button>
     </div>
+
+    <a href="/api/logout" class="logout-link">Log out</a>
   </div>
 </div>
 
