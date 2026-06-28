@@ -5,19 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Nova Lite · AI Mentor</title>
 <!-- ============================================================
- * NOVA LITE — a simple, drop-in AI mentor for ANY dashboard.
- * Single self-contained file. No backend, no build step.
+ * NOVA LITE — a simple AI mentor for the dashboard.
  *
- * HOW IT WORKS (bring-your-own-key):
- *   • The viewer pastes their OWN Anthropic API key (stored only in
- *     their browser's localStorage — never sent anywhere but Anthropic).
- *   • Nova reads whatever the dashboard saved in localStorage for context.
- *   • Calls the Claude API directly from the browser using the
- *     `anthropic-dangerous-direct-browser-access` header.
- *
- * This is the lightweight version: a flat CSS orb (no 3D), basic chat.
- * The premium build (3D avatar, Spark voice scheduler, secure server
- * proxy, palettes) is the paid Patreon episode.
+ * HOW IT WORKS:
+ *   • Calls the server-side /api/claude proxy (same origin). The
+ *     Anthropic key lives in a Vercel env var, never in the browser.
+ *   • Nova reads dashboard context from localStorage, but skips any
+ *     credential-shaped keys (token/secret/key/password/auth) so no
+ *     secrets are ever sent to the model.
+ *   • Flat CSS orb (no 3D), basic chat.
  * ============================================================ -->
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -88,18 +84,6 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; color: 
     <div class="top">
       <div class="orb" id="orb"></div>
       <div class="title"><h1>Nova Lite</h1><div class="role">your mentor</div></div>
-      <button id="keyToggle" class="key-toggle" aria-label="API key settings" title="API key">🔑</button>
-    </div>
-
-    <div class="keypanel" id="keypanel">
-      <div class="keybar">
-        <input id="keyInput" type="password" placeholder="paste your Anthropic API key (sk-ant-…)" autocomplete="off" />
-        <button id="keySave">Save</button>
-      </div>
-      <div class="hint" id="hint">
-        Your key is stored only in <b>this browser</b> and sent straight to Anthropic — never to us.
-        Get one at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.
-      </div>
     </div>
 
     <div class="feed" id="feed"></div>
@@ -112,38 +96,20 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; color: 
 
 <script>
 (function(){
-  const KEY_LS = 'nova_lite_api_key';
   const feed = document.getElementById('feed');
   const input = document.getElementById('chatInput');
   const orb = document.getElementById('orb');
-  const keyInput = document.getElementById('keyInput');
-  const hint = document.getElementById('hint');
-  const keypanel = document.getElementById('keypanel');
-  const keyToggle = document.getElementById('keyToggle');
-  keyToggle.addEventListener('click', () => keypanel.classList.toggle('open'));
 
   function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
   function setOrb(s){ orb.className = 'orb' + (s ? ' ' + s : ''); }
 
-  // ---- key handling ----
-  function savedKey(){ try { return localStorage.getItem(KEY_LS) || ''; } catch(e){ return ''; } }
-  if (savedKey()) { hint.classList.add('saved'); hint.innerHTML = '✓ Key saved in this browser. Ask away.'; keyInput.placeholder = '•••• key saved ••••'; keyToggle.classList.add('has-key'); }
-  document.getElementById('keySave').addEventListener('click', () => {
-    const k = keyInput.value.trim();
-    if (!k) return;
-    try { localStorage.setItem(KEY_LS, k); } catch(e){}
-    keyInput.value = ''; keyInput.placeholder = '•••• key saved ••••';
-    hint.classList.add('saved'); hint.innerHTML = '✓ Key saved in this browser. Ask away.';
-    keyToggle.classList.add('has-key');
-    keypanel.classList.remove('open'); // tuck it away so it's not on screen
-  });
-
   // ---- read whatever the dashboard stored (for context) ----
   function dashboardData(){
     const out = {};
+    const SKIP = /token|secret|api[_-]?key|password|auth/i; // never send credentials to the model
     for (let i = 0; i < localStorage.length; i++){
       const k = localStorage.key(i);
-      if (k === KEY_LS) continue; // never send the key as data
+      if (SKIP.test(k)) continue;
       try { out[k] = JSON.parse(localStorage.getItem(k)); } catch(e){ out[k] = localStorage.getItem(k); }
     }
     return out;
@@ -178,20 +144,13 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; color: 
   let busy = false;
   async function ask(text){
     text = (text||'').trim(); if (!text || busy) return;
-    const key = savedKey();
-    if (!key){ addCoach('- Paste your **Anthropic API key** above first, then ask me again.'); return; }
     busy = true; addUser(text); input.value = '';
     setOrb('think');
     const loading = addCoach('<span class="dots"><i></i><i></i><i></i></span>');
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/claude', {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'x-api-key': key,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-opus-4-8',
           max_tokens: 1024,
@@ -214,7 +173,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; color: 
   document.getElementById('send').addEventListener('click', () => ask(input.value));
   input.addEventListener('keydown', e => { if (e.key === 'Enter') ask(input.value); });
 
-  addCoach('Hey — I am <b>Nova</b>. Paste your key above, then ask me about food, training, sleep, or where to start. I keep it short and give you <b>one thing to act on</b>.');
+  addCoach('Hey — I am <b>Nova</b>. Ask me about food, training, sleep, or where to start. I keep it short and give you <b>one thing to act on</b>.');
 })();
 </script>
 </body>

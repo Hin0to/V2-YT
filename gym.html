@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="lock.js"></script>
-<script src="/api/config"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0b">
@@ -1265,7 +1263,6 @@ img, video, canvas, svg { max-width: 100%; }
 
 .hidden { display: none !important; }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -3024,21 +3021,19 @@ img, video, canvas, svg { max-width: 100%; }
     else if (photos.length === 1) $('wtProgressCount').textContent = '1 photo · latest ' + photoFmtDate(photos[0].dateKey);
     else $('wtProgressCount').textContent = photos.length + ' photos · latest ' + photoFmtDate(photos[0].dateKey);
   }
-  // Upload a compressed data URL to the Supabase Storage bucket
-  // 'progress-photos' and return its public URL (or null on failure).
+  // Upload a compressed data URL via the server-side /api/upload-photo
+  // proxy (private bucket, service_role key stays on the server) and get
+  // back a same-origin viewer URL like /api/photo?path=... (or null).
   async function uploadPhotoToStorage(dataUrl) {
-    if (!pcSupa) return null;
     try {
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      const filename = 'photo_' + Date.now() + '_' +
-        Math.random().toString(36).slice(2, 10) + '.jpg';
-      const { error } = await pcSupa.storage
-        .from('progress-photos')
-        .upload(filename, blob, { contentType: 'image/jpeg', upsert: false });
-      if (error) return null;
-      const { data } = pcSupa.storage.from('progress-photos').getPublicUrl(filename);
-      return data ? data.publicUrl : null;
+      const r = await fetch('/api/upload-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataUrl }),
+      });
+      if (!r.ok) return null;
+      const j = await r.json();
+      return j && j.url ? j.url : null;
     } catch (e) { return null; }
   }
 
@@ -3293,25 +3288,13 @@ img, video, canvas, svg { max-width: 100%; }
   photosRender();
 
   // ============================================================
-  // CLOUD SYNC via Supabase  (OPTIONAL — leave blank for local-only)
-  // ------------------------------------------------------------
-  // Stores your gym state as one JSONB row in the public.app_state
-  // table, keyed by APP_KEY. Supabase's realtime channel pushes
-  // changes to every device the instant they happen.
-  //
-  // SETUP (5 minutes, all in a browser):
-  //   1. Make a free account at https://supabase.com
-  //   2. Create a new project
-  //   3. In your project: Settings → API → copy your Project URL +
-  //      "Publishable" key (the one starting with `sb_publishable_`)
-  //   4. Paste them below, replacing the two placeholder strings
-  //   5. Open the SQL Editor and run the SQL block from README.md
-  //
-  // If you leave the placeholders unchanged the app still works,
-  // just only on this device (data stays in your browser).
+  // CLOUD SYNC
+  // Stores gym state as one JSONB row in public.app_state (keyed by
+  // APP_KEY) via the first-party /api/state proxy. The Supabase
+  // service_role key stays SERVER-SIDE — no Supabase key ever ships to
+  // the browser. See SETUP.md for env vars + SQL. We pull once on load,
+  // then refresh on focus (no realtime socket).
   // ============================================================
-  const SUPABASE_URL = (window.DASH_SUPABASE_URL) || 'https://srajryooffirbroltjmg.supabase.co';
-  const SUPABASE_KEY = (window.DASH_SUPABASE_KEY) || 'sb_publishable_5142ZwTLF_DkSVRzciNuRA_bHwRAu4c';
   const APP_KEY = 'po-coach';
   // Note: po_coach_photos IS synced, but only URL-pointer entries ride
   // the wire. The actual JPEG lives in Supabase Storage. pcCollectState
@@ -3319,7 +3302,6 @@ img, video, canvas, svg { max-width: 100%; }
   // tiny and we never blow iOS Safari's ~5MB localStorage quota.
   const PC_SYNCED_KEYS = ['po_coach_v1', 'po_coach_workout_done', 'po_coach_weights', 'po_coach_photos'];
 
-  let pcSupa = null;
   let pcPushTimer = null;
   let pcSuppressSync = false;
   let pcPendingRemote = null;
@@ -3437,18 +3419,16 @@ img, video, canvas, svg { max-width: 100%; }
   }
 
   async function pcPushNow() {
-    if (!pcSupa) return;
     const state = pcCollectState();
     const json = JSON.stringify(state);
     if (json === pcLastSyncedJson) return;
     try {
-      const { error } = await pcSupa
-        .from('app_state')
-        .upsert(
-          { key: APP_KEY, data: state, updated_at: new Date().toISOString() },
-          { onConflict: 'key' }
-        );
-      if (!error) pcLastSyncedJson = json;
+      const r = await fetch('/api/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: APP_KEY, data: state }),
+      });
+      if (r.ok) pcLastSyncedJson = json;
     } catch (_) {}
   }
 
@@ -3461,57 +3441,44 @@ img, video, canvas, svg { max-width: 100%; }
   // Backup push on unload via fetch keepalive so a fast refresh
   // doesn't lose the latest change before the debounced push fires.
   function pcFlushPushOnUnload() {
-    if (!pcSupa) return;
     const state = pcCollectState();
     const json = JSON.stringify(state);
     if (json === pcLastSyncedJson) return;
     try {
-      fetch(SUPABASE_URL + '/rest/v1/app_state?on_conflict=key', {
+      fetch('/api/state', {
         method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates',
-        },
-        body: JSON.stringify({ key: APP_KEY, data: state, updated_at: new Date().toISOString() }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: APP_KEY, data: state }),
         keepalive: true,
       }).catch(() => {});
       pcLastSyncedJson = json;
     } catch (_) {}
   }
 
-  // Initial sync: connect Supabase, pull current state, subscribe to
-  // realtime updates so other devices' changes appear instantly.
-  (async function pcInitCloudSync() {
-    if (!window.supabase || !SUPABASE_URL || !SUPABASE_KEY) return;
-    // Skip if the placeholder values are still in place (local-only mode)
-    if (SUPABASE_URL.indexOf('PASTE-') === 0 || SUPABASE_KEY.indexOf('PASTE-') === 0) return;
-    pcSupa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  // Pull current cloud state from the /api/state proxy.
+  async function pcPull() {
     try {
-      const { data, error } = await pcSupa
-        .from('app_state').select('data').eq('key', APP_KEY).maybeSingle();
-      if (!error && data && data.data && Object.keys(data.data).length > 0) {
-        pcLastSyncedJson = JSON.stringify(data.data);
-        pcMaybeApplyRemote(data.data);
-      } else if (Object.keys(pcCollectState()).length > 0) {
-        pcSchedulePush();
+      const r = await fetch('/api/state?key=' + encodeURIComponent(APP_KEY), { headers: { 'Accept': 'application/json' } });
+      if (!r.ok) return;
+      const remote = (await r.json()).data;
+      if (remote && typeof remote === 'object' && Object.keys(remote).length > 0) {
+        const incoming = JSON.stringify(remote);
+        if (incoming === pcLastSyncedJson) return;
+        pcLastSyncedJson = incoming;
+        pcMaybeApplyRemote(remote);
       }
     } catch (_) {}
-    pcSupa.channel('app_state_' + APP_KEY)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'app_state',
-        filter: 'key=eq.' + APP_KEY,
-      }, (payload) => {
-        if (!payload.new || !payload.new.data) return;
-        const incoming = JSON.stringify(payload.new.data);
-        if (incoming === pcLastSyncedJson) return; // echo of our own push
-        pcLastSyncedJson = incoming;
-        pcMaybeApplyRemote(payload.new.data);
-      })
-      .subscribe();
+  }
+
+  // Initial sync: pull current state, then refresh whenever the tab
+  // regains focus (no realtime socket anymore — the key is server-side).
+  (async function pcInitCloudSync() {
+    await pcPull();
+    if (pcLastSyncedJson === null && Object.keys(pcCollectState()).length > 0) {
+      pcSchedulePush();
+    }
+    window.addEventListener('focus', pcPull);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) pcPull(); });
   })();
 
   document.addEventListener('focusout', () => {
@@ -3525,7 +3492,7 @@ img, video, canvas, svg { max-width: 100%; }
 })();
 </script>
 
-<!-- ===== Nova gym coach (top-right avatar, bring-your-own Anthropic key) ===== -->
+<!-- ===== Nova gym coach (top-right avatar, calls server-side /api/claude) ===== -->
 <style>
   /* Anchor the avatar to the top-right of the page content, not the far corner. */
   .po-shell { position: relative; }
@@ -3604,7 +3571,6 @@ img, video, canvas, svg { max-width: 100%; }
 <script>
 (function () {
   'use strict';
-  const KEY_LS = 'nova_lite_api_key';
   const $ = (id) => document.getElementById(id);
   const fab = $('nvFab'), panel = $('nvPanel'), body = $('nvBody'), input = $('nvInput');
   let busy = false, greeted = false;
@@ -3613,8 +3579,6 @@ img, video, canvas, svg { max-width: 100%; }
   // top-right of the page content (not the far viewport corner).
   const shell = document.querySelector('.po-shell');
   if (shell) { shell.appendChild(fab); shell.appendChild(panel); }
-
-  function savedKey() { try { return localStorage.getItem(KEY_LS) || ''; } catch (e) { return ''; } }
 
   function esc(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
   function md(t){
@@ -3660,15 +3624,13 @@ img, video, canvas, svg { max-width: 100%; }
 
   async function ask(text){
     text = (text||'').trim(); if (!text || busy) return;
-    const key = savedKey();
     addMsg('user', md(text));
-    if (!key){ addMsg('coach', md("Paste your **Anthropic API key** on the Nova page first (the 🧠 tile on the home screen) — it's saved in this browser and I'll use it here too.")); return; }
     busy = true;
     const loading = addMsg('coach', '<span class="nv-dots"><i></i><i></i><i></i></span>');
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/claude', {
         method: 'POST',
-        headers: { 'content-type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+        headers: { 'content-type':'application/json' },
         body: JSON.stringify({ model:'claude-opus-4-8', max_tokens:1024, system: SYS + gymContext(), messages:[{role:'user', content:text}] }),
       });
       const json = await res.json();
