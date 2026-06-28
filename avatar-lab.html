@@ -3,67 +3,26 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Avatar Lab · Nova</title>
+<title>Avatar Lab · Rowan</title>
 <!-- ============================================================
- * AVATAR LAB — local playground for the Nova avatar.
+ * AVATAR LAB — local playground for the Rowan avatar.
  * Pick colors, try 5 designs, preview idle / thinking / happy,
- * then "Use in Nova" copies the exact CSS for that design.
+ * then "Use in Rowan" copies the exact CSS for that design.
  * Pure HTML/CSS/JS, no build step. Serve locally and open.
  * ============================================================ -->
+
+<!-- ============================================================
+   AVATAR DESIGN CSS — kept in the FIRST stylesheet on purpose.
+   The "Use in Rowan" copy reads document.styleSheets[0] to extract
+   the .av / @keyframes rules, so these MUST stay as sheet[0].
+   Driven by --c1 / --c2 / --c3. Do not move below theme.css.
+   ============================================================ -->
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --c1: #6EE7B7;   /* primary / light */
   --c2: #67E8F9;   /* secondary / glow */
   --c3: #1f8f66;   /* deep / shadow   */
-  --bg: #05060c; --fg: #e9ecf5; --muted: rgba(233,236,245,.55); --line: rgba(255,255,255,.1);
 }
-html, body { background: var(--bg); }
-body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; color: var(--fg); min-height: 100vh; }
-
-.shell { max-width: 1080px; margin: 0 auto; padding: 32px 20px 80px; }
-header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
-header h1 { font-family: 'Times New Roman', Georgia, serif; font-style: italic; font-weight: 500; font-size: 30px;
-  background: linear-gradient(90deg, var(--c2), var(--c1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-header .role { font-family: ui-monospace, monospace; font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); }
-.sub { color: var(--muted); font-size: 13.5px; margin-bottom: 26px; }
-
-/* ---------- control bar ---------- */
-.controls { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-end;
-  background: rgba(255,255,255,.03); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin-bottom: 14px; }
-.ctl { display: flex; flex-direction: column; gap: 7px; }
-.ctl > label { font-family: ui-monospace, monospace; font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-.swatches { display: flex; gap: 10px; }
-.swatch { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.swatch input[type=color] { width: 40px; height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: none; cursor: pointer; }
-.swatch input[type=color]::-webkit-color-swatch-wrapper { padding: 3px; }
-.swatch input[type=color]::-webkit-color-swatch { border: none; border-radius: 7px; }
-.swatch span { font-size: 9px; color: var(--muted); font-family: ui-monospace, monospace; }
-
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-.seg button { border: 0; background: transparent; color: var(--muted); padding: 9px 14px; cursor: pointer; font-size: 12.5px; font-weight: 600; }
-.seg button.on { background: var(--c1); color: #04140d; }
-
-.presets { display: flex; flex-wrap: wrap; gap: 8px; }
-.preset { border: 1px solid var(--line); border-radius: 999px; padding: 6px; cursor: pointer; background: none; display: flex; gap: 0; align-items: center; }
-.preset i { width: 16px; height: 16px; border-radius: 50%; display: block; margin: -3px; border: 2px solid var(--bg); }
-.preset:hover { border-color: var(--c1); }
-
-.sizebar { display: flex; align-items: center; gap: 10px; }
-.sizebar input[type=range] { accent-color: var(--c1); width: 130px; }
-
-/* ---------- gallery ---------- */
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
-.card { position: relative; background: rgba(255,255,255,.025); border: 1px solid var(--line); border-radius: 18px;
-  padding: 26px 18px 18px; display: flex; flex-direction: column; align-items: center; gap: 16px; min-height: 230px; transition: border-color .2s, transform .2s; }
-.card:hover { border-color: color-mix(in srgb, var(--c1) 50%, transparent); transform: translateY(-2px); }
-.stage { height: 96px; display: flex; align-items: center; justify-content: center; }
-.card .name { font-size: 13.5px; font-weight: 600; }
-.card .desc { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.4; margin-top: -8px; }
-.use { margin-top: auto; border: 1px solid var(--line); background: rgba(255,255,255,.03); color: var(--fg);
-  font-size: 12px; font-weight: 600; padding: 9px 0; width: 100%; border-radius: 10px; cursor: pointer; transition: .15s; }
-.use:hover { background: var(--c1); color: #04140d; border-color: var(--c1); }
-.use.copied { background: var(--c1); color: #04140d; border-color: var(--c1); }
 
 /* ============================================================
    AVATAR DESIGNS — all driven by --c1 / --c2 / --c3.
@@ -72,7 +31,7 @@ header .role { font-family: ui-monospace, monospace; font-size: 10px; letter-spa
    ============================================================ */
 .av { --s: 64px; width: var(--s); height: var(--s); position: relative; flex-shrink: 0; }
 
-/* 1 · ORB — the original Nova orb */
+/* 1 · ORB — the original Rowan orb */
 .av--orb { border-radius: 50%;
   background: radial-gradient(circle at 32% 28%, #ffffff, var(--c1) 42%, var(--c3) 100%);
   box-shadow: 0 0 26px -2px var(--c1), inset 0 -7px 16px rgba(0,0,0,.28);
@@ -143,23 +102,105 @@ header .role { font-family: ui-monospace, monospace; font-size: 10px; letter-spa
   66%{ border-radius: 45% 55% 55% 45% / 42% 58% 42% 58% } }
 @keyframes blink { 0%,92%,100%{ transform: scaleY(1) } 96%{ transform: scaleY(.1) } }
 @keyframes pop { 0%{ transform: scale(1) } 40%{ transform: scale(1.18) } 100%{ transform: scale(1) } }
+</style>
 
-.toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
-  background: var(--c1); color: #04140d; font-weight: 700; font-size: 13px; padding: 11px 20px; border-radius: 999px;
-  opacity: 0; pointer-events: none; transition: .25s; box-shadow: 0 10px 30px -6px var(--c1); }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+<link rel="stylesheet" href="theme.css">
+<script src="anim.js" defer></script>
 
-@media (max-width: 560px){ .controls { gap: 16px; } }
+<style>
+/* ============================================================
+   PAGE RESTYLE — editorial / Swiss. Background lives on <body>
+   in theme.css; this page only consumes the shared tokens.
+   ============================================================ */
+.page{max-width:1100px;margin:0 auto;padding:30px 36px 96px}
+@media(max-width:560px){.page{padding:24px 18px 96px}}
+
+/* topbar / brand */
+.topbar2{display:flex;justify-content:space-between;align-items:center;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.brand{font-weight:700;font-size:15px;letter-spacing:.02em;color:var(--ink)}
+.brand .dot{color:var(--accent)}
+.topbar2 .role{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+/* hero */
+.hero{padding:48px 0 30px;border-bottom:1px solid var(--line)}
+.title{font-size:clamp(44px,9vw,104px);font-weight:700;line-height:.9;letter-spacing:-.035em;text-transform:uppercase;color:var(--ink);margin:18px 0 0}
+.title .thin{color:var(--faint);font-weight:400}
+.sub{max-width:640px;margin-top:26px;font-size:14px;line-height:1.55;color:var(--muted)}
+.sub b{color:var(--ink);font-weight:600}
+
+/* ---------- control bar ---------- */
+.controls{display:flex;flex-wrap:wrap;gap:30px;align-items:flex-end;
+  border:1px solid var(--line);background:var(--raise);padding:22px 24px;margin-top:18px}
+.ctl{display:flex;flex-direction:column;gap:10px}
+.ctl > label{font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.swatches{display:flex;gap:12px}
+.swatch{display:flex;flex-direction:column;align-items:center;gap:6px}
+.swatch input[type=color]{width:40px;height:40px;padding:0;border:1px solid var(--line);background:none;cursor:pointer}
+.swatch input[type=color]::-webkit-color-swatch-wrapper{padding:3px}
+.swatch input[type=color]::-webkit-color-swatch{border:none}
+.swatch span{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* segmented control — editorial */
+.seg{display:inline-flex;border:1px solid var(--line);overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--muted);font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:11px 15px;cursor:pointer;transition:background .15s,color .15s}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:var(--accent);color:#16130E}
+
+/* palette chips */
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+.preset{border:1px solid var(--line);padding:6px 7px;cursor:pointer;background:transparent;display:flex;gap:0;align-items:center;transition:border-color .15s}
+.preset i{width:15px;height:15px;display:block;margin:-2px;border:2px solid var(--paper-0)}
+.preset:hover{border-color:var(--accent)}
+
+/* size slider */
+.sizebar{display:flex;align-items:center;gap:12px}
+.sizebar input[type=range]{accent-color:var(--accent);width:130px}
+.sizebar .val{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em}
+
+/* ---------- gallery ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.card{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;
+  padding:30px 18px 18px;min-height:248px;
+  border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  background:transparent;transition:background .2s}
+.card:hover{background:var(--raise)}
+.card .idx{position:absolute;top:12px;left:14px;font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.08em}
+.stage{height:104px;display:flex;align-items:center;justify-content:center;margin-top:6px}
+.card .name{font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:-.01em;color:var(--ink)}
+.card .desc{font-family:var(--mono);font-size:9.5px;line-height:1.5;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:-6px}
+.use{margin-top:auto;border:1px solid var(--line);background:transparent;color:var(--ink);
+  font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  padding:11px 0;width:100%;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.use:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.use.copied{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* toast — editorial dark pill */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:var(--panelD);color:var(--inkD);border:1px solid var(--lineD);
+  font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  padding:13px 22px;opacity:0;pointer-events:none;transition:.25s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:560px){.controls{gap:18px}}
 </style>
 </head>
 <body data-state="idle">
-  <div class="shell">
-    <header>
-      <h1>Avatar Lab</h1><span class="role">Nova design playground</span>
-    </header>
-    <p class="sub">Tweak the colors, watch all five designs react. Toggle the state to preview thinking & happy. Hit <b>Use in Nova</b> to copy that design's CSS.</p>
+  <div class="page">
 
-    <div class="controls">
+    <div class="topbar2">
+      <div class="brand">AVATAR LAB<span class="dot">°</span></div>
+      <span class="role">Rowan design playground</span>
+    </div>
+
+    <section class="hero reveal">
+      <div class="kicker"><span class="idx">[00]</span> &nbsp; ROWAN AVATAR LAB &nbsp; / &nbsp; 5 DESIGNS</div>
+      <h1 class="title">Avatar<br><span class="thin">Lab.</span></h1>
+      <p class="sub">Tweak the colors, watch all five designs react. Toggle the state to preview thinking &amp; happy. Hit <b>Use in Rowan</b> to copy that design's CSS.</p>
+    </section>
+
+    <div class="sec-h reveal"><span class="n">01</span><h2>Controls</h2><div class="rule"></div><span class="meta">Color · state · size</span></div>
+
+    <div class="controls reveal">
       <div class="ctl">
         <label>Colors</label>
         <div class="swatches">
@@ -185,11 +226,13 @@ header .role { font-family: ui-monospace, monospace; font-size: 10px; letter-spa
 
       <div class="ctl">
         <label>Size</label>
-        <div class="sizebar"><input id="size" type="range" min="44" max="120" value="64"><span id="sizeVal" style="font-size:12px;color:var(--muted);font-family:ui-monospace,monospace">64px</span></div>
+        <div class="sizebar"><input id="size" type="range" min="44" max="120" value="64"><span id="sizeVal" class="val">64px</span></div>
       </div>
     </div>
 
-    <div class="grid" id="grid"></div>
+    <div class="sec-h reveal"><span class="n">02</span><h2>Gallery</h2><div class="rule"></div><span class="meta">5 designs</span></div>
+
+    <div class="grid stagger" id="grid"></div>
   </div>
 
   <div class="toast" id="toast">Copied!</div>
@@ -200,7 +243,7 @@ header .role { font-family: ui-monospace, monospace; font-size: 10px; letter-spa
   const body = document.body;
 
   const DESIGNS = [
-    { id:'orb',     name:'Orb',     desc:'Glossy sphere with eyes — the original Nova.', html:'' },
+    { id:'orb',     name:'Orb',     desc:'Glossy sphere with eyes — the original Rowan.', html:'' },
     { id:'reactor', name:'Reactor', desc:'Spinning energy rings around a bright core.',   html:'<i></i>' },
     { id:'blob',    name:'Blob',    desc:'Soft morphing droplet, playful and alive.',     html:'' },
     { id:'bot',     name:'Bot',     desc:'Friendly robot head with a blinking face.',     html:'<div class="face"><b></b><b></b></div>' },
@@ -220,14 +263,16 @@ header .role { font-family: ui-monospace, monospace; font-size: 10px; letter-spa
 
   // build gallery
   const grid = document.getElementById('grid');
-  DESIGNS.forEach(d => {
+  DESIGNS.forEach((d, i) => {
     const card = document.createElement('div');
     card.className = 'card';
+    const n = String(i + 1).padStart(2, '0');
     card.innerHTML =
+      '<span class="idx">'+n+'</span>' +
       '<div class="stage"><div class="av av--'+d.id+'">'+d.html+'</div></div>' +
       '<div class="name">'+d.name+'</div>' +
       '<div class="desc">'+d.desc+'</div>' +
-      '<button class="use" data-id="'+d.id+'">Use in Nova</button>';
+      '<button class="use" data-id="'+d.id+'">Use in Rowan</button>';
     grid.appendChild(card);
   });
 
@@ -260,7 +305,7 @@ header .role { font-family: ui-monospace, monospace; font-size: 10px; letter-spa
     document.querySelectorAll('#stateSeg button').forEach(b => b.classList.toggle('on', b === btn));
   });
 
-  // ---- "Use in Nova": copy the chosen design's CSS, ready to paste ----
+  // ---- "Use in Rowan": copy the chosen design's CSS, ready to paste ----
   const toast = document.getElementById('toast');
   function showToast(msg){ toast.textContent = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1600); }
 
@@ -275,7 +320,7 @@ header .role { font-family: ui-monospace, monospace; font-size: 10px; letter-spa
       if (t.includes('.av--'+id)) { rules.push(t); continue; }
       if (t.startsWith('@keyframes')) { rules.push(t); continue; }
     }
-    return `/* Nova avatar · "${id}" design — paste into your stylesheet */\n${vars}\n\n` + rules.join('\n') +
+    return `/* Rowan avatar · "${id}" design — paste into your stylesheet */\n${vars}\n\n` + rules.join('\n') +
       `\n\n<!-- markup -->\n<div class="av av--${id}" data-state="idle">${DESIGNS.find(d=>d.id===id).html}</div>`;
   }
 
@@ -286,7 +331,7 @@ header .role { font-family: ui-monospace, monospace; font-size: 10px; letter-spa
       const ta = document.createElement('textarea'); ta.value = css; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
     }
     btn.classList.add('copied'); btn.textContent = '✓ Copied CSS';
-    setTimeout(()=>{ btn.classList.remove('copied'); btn.textContent = 'Use in Nova'; }, 1500);
+    setTimeout(()=>{ btn.classList.remove('copied'); btn.textContent = 'Use in Rowan'; }, 1500);
     showToast(btn.dataset.id + ' CSS copied');
   });
 })();

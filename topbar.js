@@ -20,109 +20,131 @@
   position: sticky; top: 0; z-index: 40;
   display: flex; justify-content: flex-end; align-items: center;
   gap: 8px;
-  padding: max(10px, env(safe-area-inset-top)) 14px 8px;
-  background: #0a0a0b;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  padding: max(10px, env(safe-area-inset-top)) 16px 9px;
+  background: rgba(239, 234, 223, 0.82);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.13);
+  font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 .topbar-water-wrap {
   display: flex; align-items: stretch;
 }
 .topbar-water-pill {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 9px 14px;
-  background: rgba(125, 211, 252, 0.08);
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  padding: 9px 13px;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.13);
   border-right: none;
-  border-radius: 12px 0 0 12px;
+  border-radius: 3px 0 0 3px;
   text-decoration: none;
-  color: #FAFAFA;
+  color: #1A1714;
   -webkit-tap-highlight-color: transparent;
 }
 .topbar-water-pill .topbar-pill-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: #7DD3FC; flex-shrink: 0;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #E0512A; flex-shrink: 0;
+  animation: topbar-breathe 1.8s ease-in-out infinite;
 }
-.topbar-water-pill.warn .topbar-pill-dot { background: #fbbf24; }
+@keyframes topbar-breathe {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.35; transform: scale(0.6); }
+}
+.topbar-water-pill.warn .topbar-pill-dot { background: #6E6A62; animation: none; }
 .topbar-water-pill.miss .topbar-pill-dot {
-  background: #ff8a8a;
+  background: #E0512A;
   animation: topbar-miss-pulse 1.6s ease-in-out infinite;
 }
 @keyframes topbar-miss-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-  50%      { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224, 81, 42, 0.5); }
+  50%      { box-shadow: 0 0 0 5px rgba(224, 81, 42, 0); }
 }
 .topbar-pill-count {
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 13px; font-weight: 700;
-  color: #FAFAFA;
+  font-family: "Space Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: #1A1714;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .topbar-water-add {
-  width: 44px;
-  border: 1px solid rgba(125, 211, 252, 0.16);
-  background: linear-gradient(180deg, rgba(125, 211, 252, 0.28), rgba(110, 231, 183, 0.28));
-  color: #FFFFFF;
-  font-family: inherit; font-size: 20px; font-weight: 700; line-height: 1;
+  width: 42px;
+  border: 1px solid #E0512A;
+  background: #E0512A;
+  color: #EFEADF;
+  font-family: "Space Grotesk", inherit; font-size: 20px; font-weight: 700; line-height: 1;
   cursor: pointer;
-  border-radius: 0 12px 12px 0;
+  border-radius: 0 3px 3px 0;
   -webkit-tap-highlight-color: transparent;
   transition: background 0.15s, transform 0.10s;
 }
 .topbar-water-add:active { transform: scale(0.94); }
 .topbar-water-add.flash {
-  background: linear-gradient(180deg, rgba(125, 211, 252, 0.7), rgba(110, 231, 183, 0.7));
+  background: #1A1714;
+  border-color: #1A1714;
 }
 .topbar-finance-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 44px; height: 42px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 12px;
+  width: 42px; height: 40px;
+  border: 1px solid rgba(0, 0, 0, 0.13);
+  background: transparent;
+  border-radius: 3px;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 }
-.topbar-finance-btn:hover { background: rgba(255, 255, 255, 0.08); }
+.topbar-finance-btn:hover { background: rgba(0, 0, 0, 0.04); border-color: rgba(0, 0, 0, 0.22); }
 .topbar-finance-icon {
-  font-size: 20px; line-height: 1;
-  filter: grayscale(100%) brightness(1.4);
-  opacity: 0.85;
+  display: inline-flex; align-items: center; justify-content: center;
+  line-height: 1;
+  color: #6E6A62;
 }
+.topbar-finance-icon svg {
+  display: inline-block; vertical-align: middle;
+  width: 19px; height: 19px;
+  stroke: currentColor; fill: none;
+}
+.topbar-finance-btn:hover .topbar-finance-icon { color: #1A1714; }
 
-/* Bottom tab bar — Instagram-style */
+/* Bottom tab bar — editorial hairline + mono labels */
 .bottombar {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
   display: flex; justify-content: space-around; align-items: stretch;
-  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
-  background: #0a0a0b;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  padding: 7px 0 calc(7px + env(safe-area-inset-bottom));
+  background: #1B1813;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 .bottombar-tab {
   flex: 1;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 3px;
+  gap: 4px;
   padding: 6px 0 4px;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 10px; font-weight: 600;
-  letter-spacing: 0.04em;
+  color: #9C968B;
+  font-size: 9.5px; font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
   -webkit-tap-highlight-color: transparent;
   transition: color 0.15s;
 }
 .bottombar-tab-icon {
-  font-size: 24px; line-height: 1;
-  filter: grayscale(100%) brightness(1.2);
-  opacity: 0.55;
-  transition: opacity 0.15s, filter 0.15s, transform 0.10s;
+  display: inline-flex; align-items: center; justify-content: center;
+  line-height: 1;
+  color: #9C968B;
+  opacity: 0.75;
+  transition: opacity 0.15s, color 0.15s, transform 0.10s;
+}
+.bottombar-tab-icon svg {
+  display: inline-block; vertical-align: middle;
+  width: 22px; height: 22px;
+  stroke: currentColor; fill: none;
 }
 .bottombar-tab.active {
-  color: #FAFAFA;
+  color: #E0512A;
 }
 .bottombar-tab.active .bottombar-tab-icon {
-  filter: grayscale(100%) brightness(1.6);
+  color: #E0512A;
   opacity: 1;
 }
 .bottombar-tab:active .bottombar-tab-icon { transform: scale(0.92); }
@@ -133,14 +155,14 @@ body.has-bottombar {
 }
 
 @media (max-width: 480px) {
-  .topbar { padding-left: 10px; padding-right: 10px; gap: 6px; }
+  .topbar { padding-left: 12px; padding-right: 12px; gap: 6px; }
   .topbar-water-pill { padding: 8px 11px; gap: 6px; }
-  .topbar-pill-count { font-size: 12px; }
-  .topbar-water-add { width: 40px; font-size: 18px; }
-  .topbar-finance-btn { width: 40px; height: 38px; }
-  .topbar-finance-icon { font-size: 18px; }
-  .bottombar-tab-icon { font-size: 22px; }
-  .bottombar-tab { font-size: 10px; }
+  .topbar-pill-count { font-size: 11px; }
+  .topbar-water-add { width: 38px; font-size: 18px; }
+  .topbar-finance-btn { width: 38px; height: 37px; }
+  .topbar-finance-icon svg { width: 17px; height: 17px; }
+  .bottombar-tab-icon svg { width: 20px; height: 20px; }
+  .bottombar-tab { font-size: 9px; letter-spacing: 0.12em; }
 }
 
 /* === Global mobile lockdown ===
@@ -200,7 +222,7 @@ body.topbar-modal-open {
     <button class="topbar-water-add" id="topbarWaterAdd" aria-label="Log one drink" type="button">+</button>
   </div>
   <a href="finance.html" class="topbar-finance-btn" id="topbarFinance" aria-label="Finance">
-    <span class="topbar-finance-icon">📊</span>
+    <span class="topbar-finance-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="19" height="19"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
   </a>
 </header>
 `;
@@ -208,15 +230,15 @@ body.topbar-modal-open {
   const bottombarHtml = `
 <nav class="bottombar" id="bottombar" role="navigation" aria-label="Main tabs">
   <a href="index.html" class="bottombar-tab" data-page="main">
-    <span class="bottombar-tab-icon">🏠</span>
+    <span class="bottombar-tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></span>
     <span>Main</span>
   </a>
   <a href="health.html" class="bottombar-tab" data-page="health">
-    <span class="bottombar-tab-icon">💊</span>
+    <span class="bottombar-tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="8" width="18" height="8" rx="4"/><path d="M12 8v8"/></svg></span>
     <span>Health</span>
   </a>
   <a href="gym.html" class="bottombar-tab" data-page="fitness">
-    <span class="bottombar-tab-icon">💪</span>
+    <span class="bottombar-tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M6.5 6.5v11M3.5 9v6M17.5 6.5v11M20.5 9v6M6.5 12h11"/></svg></span>
     <span>Fitness</span>
   </a>
 </nav>

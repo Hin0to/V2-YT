@@ -6,187 +6,179 @@
 <meta name="theme-color" content="#050506">
 <title>Caffeine · Dashboard</title>
 
+<link rel="stylesheet" href="theme.css">
+<script src="anim.js" defer></script>
 <script src="sync.js" defer></script>
 <script src="topbar.js" defer></script>
 
 <style>
 :root {
-  --text-primary: #FAFAFA;
-  --text-secondary: #B8B6B0;
-  --text-tertiary: #76746E;
-  --success: #6BE3A4;
-  --warning: #F2C063;
-  --danger:  #FF6B6B;
-  --caf: #C9A36B;
-  --energy: #6BE3A4;
-  --font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
-* { box-sizing: border-box; }
-html, body {
-  margin: 0; padding: 0; background: #050506; color: var(--text-secondary);
-  font-family: var(--font); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+  /* page-local semantic colors mapped onto the shared editorial palette */
+  --success: #2F9E6E;
+  --warning: #B8842E;
+  --danger:  #C0432A;
+  --caf: var(--accent);
+  --energy: #2F9E6E;
 }
 body {
-  min-height: 100vh; position: relative; overflow-x: hidden;
-  padding: max(28px, env(safe-area-inset-top)) 20px 60px;
+  position: relative; overflow-x: hidden;
+  padding: max(28px, env(safe-area-inset-top)) 20px 80px;
 }
-body::before {
-  content: ''; position: fixed; inset: 0;
-  background:
-    radial-gradient(circle at 82% 14%, rgba(107,227,164,0.12), transparent 45%),
-    radial-gradient(circle at 18% 90%, rgba(201,163,107,0.07), transparent 50%);
-  filter: blur(40px); pointer-events: none; z-index: -2;
-  animation: drift 36s ease-in-out infinite alternate;
-}
-body::after {
-  content: ''; position: fixed; inset: 0;
-  background-image: radial-gradient(rgba(255,255,255,0.014) 1px, transparent 1px);
-  background-size: 3px 3px; pointer-events: none; z-index: -1;
-}
-@keyframes drift { 0%{transform:translate3d(0,0,0)} 100%{transform:translate3d(-22px,14px,0)} }
 
 .page { max-width: 1100px; margin: 0 auto; }
-.dash-title {
-  margin: 0 0 14px; font-size: 28px; font-weight: 700; letter-spacing: -0.025em;
-  background: linear-gradient(180deg, #FFFFFF 0%, #C7C4BC 120%);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: transparent;
-}
-@media (max-width: 480px) { .dash-title { font-size: 22px; } }
 
-.section { margin-top: 8px; }
-.section-title {
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--text-tertiary); display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+/* ===== Hero / page title ===== */
+.dash-head { margin: 6px 0 30px; }
+.dash-kicker { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--muted); display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+.dash-kicker .idx { color: var(--accent); }
+.dash-title {
+  margin: 0; font-family: var(--sans); font-weight: 700; line-height: 0.9;
+  letter-spacing: -0.035em; text-transform: uppercase; color: var(--ink);
+  font-size: clamp(54px, 12vw, 104px);
 }
-.section-title::before { content: ''; width: 18px; height: 1px; background: var(--text-tertiary); opacity: 0.6; }
-.section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.08), transparent); }
+.dash-title .thin { color: var(--faint); font-weight: 400; }
+@media (max-width: 480px) { .dash-title { font-size: 46px; } }
+
+/* ===== Section header (theme .sec-h pattern) ===== */
+.sec-h { display: flex; align-items: baseline; gap: 14px; margin: 38px 0 18px; }
+.sec-h .n { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+.sec-h h2 { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; margin: 0; color: var(--ink); }
+.sec-h .rule { flex: 1; height: 1px; background: var(--line); }
+.sec-h .meta { font-family: var(--mono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
 
 .gm-card {
-  position: relative; background: rgba(255,255,255,0.04); border-radius: 16px; padding: 20px;
-  margin-bottom: 14px; backdrop-filter: blur(24px) saturate(1.2); -webkit-backdrop-filter: blur(24px) saturate(1.2);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.45); overflow: hidden;
+  position: relative; background: var(--paper-1); border: 1px solid var(--line); border-radius: 3px;
+  padding: 22px; margin-bottom: 14px; overflow: hidden;
 }
-.gm-eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-tertiary); }
 
 /* ===== Energy curve hero ===== */
 .energy-head { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 6px; }
 .ring { position: relative; width: 92px; height: 92px; flex-shrink: 0; }
 .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.ring-track { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 7; }
-.ring-fill { fill: none; stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset 0.6s cubic-bezier(0.22,1,0.36,1), stroke 0.4s; }
-.ring-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-primary); letter-spacing: -0.03em; }
+.ring-track { fill: none; stroke: var(--line); stroke-width: 6; }
+.ring-fill { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.6s cubic-bezier(0.22,1,0.36,1), stroke 0.4s; }
+.ring-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--sans); font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); letter-spacing: -0.03em; }
 .energy-label { display: flex; flex-direction: column; }
-.energy-state { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); }
-.energy-when { font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-tertiary); margin: 3px 0 5px; }
-.energy-hint { font-size: 11px; color: var(--text-tertiary); display: inline-flex; align-items: center; gap: 6px; }
-.energy-hint .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--energy); }
-.energy-desc { flex: 1; min-width: 160px; font-size: 13px; color: var(--text-tertiary); line-height: 1.5; }
+.energy-state { font-family: var(--sans); font-size: 24px; font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; color: var(--ink); }
+.energy-when { font-family: var(--mono); font-size: 10.5px; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 3px 0 5px; }
+.energy-hint { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); display: inline-flex; align-items: center; gap: 7px; }
+.energy-hint .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.energy-desc { flex: 1; min-width: 160px; font-size: 13px; color: var(--muted); line-height: 1.55; }
 
-.seg-toggle { display: inline-flex; border: 1px solid rgba(255,255,255,0.10); border-radius: 999px; overflow: hidden; background: rgba(0,0,0,0.25); flex-shrink: 0; }
+.seg-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 2px; overflow: hidden; background: transparent; flex-shrink: 0; }
 .seg-toggle button {
-  border: 0; background: transparent; color: var(--text-tertiary);
-  font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.10em;
+  border: 0; border-left: 1px solid var(--line); background: transparent; color: var(--muted);
+  font-family: var(--mono); font-size: 10.5px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase;
   padding: 8px 14px; cursor: pointer; transition: background 0.15s, color 0.15s;
 }
-.seg-toggle button.on { background: rgba(107,227,164,0.15); color: var(--energy); }
+.seg-toggle button:first-child { border-left: 0; }
+.seg-toggle button.on { background: var(--accent); color: #fff; }
 
-.curve-wrap { position: relative; width: 100%; margin-top: 14px; touch-action: pan-y; }
+/* the energy chart keeps its glowing white-on-dark SVG render — host it on a
+   dark editorial panel so the JS-drawn gridlines / night shading read correctly */
+.curve-wrap { position: relative; width: 100%; margin-top: 18px; touch-action: pan-y;
+  background: var(--panelD); border: 1px solid var(--lineD); border-radius: 2px; padding: 14px 14px 4px; }
 .curve-wrap svg { width: 100%; height: 230px; display: block; overflow: visible; }
-.axis { display: flex; justify-content: space-between; margin-top: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); }
+.axis { display: flex; justify-content: space-between; margin-top: 8px; padding: 0 14px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; color: var(--mutedD); }
 
 /* footer summary band */
-.plan-band { margin-top: 16px; padding: 14px 16px; border: 1px dashed rgba(255,255,255,0.12); border-radius: 12px;
-  display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; }
-.plan-item { display: flex; flex-direction: column; gap: 2px; }
-.plan-item .k { font-size: 9.5px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-tertiary); }
-.plan-item .v { font-size: 14px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.plan-band { margin-top: 18px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 2px;
+  display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+.plan-item { display: flex; flex-direction: column; gap: 3px; }
+.plan-item .k { font-family: var(--mono); font-size: 9.5px; font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.plan-item .v { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
 .plan-item .v.green { color: var(--success); } .plan-item .v.amber { color: var(--warning); } .plan-item .v.red { color: var(--danger); }
 
 /* ===== Smart timing tiles + tips ===== */
 .tile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; }
-.mini { background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 15px; }
-.mini .k { font-size: 9.5px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-tertiary); }
-.mini .v { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-top: 7px; font-variant-numeric: tabular-nums; line-height: 1.1; }
-.mini .s { font-size: 11.5px; color: var(--text-tertiary); margin-top: 5px; line-height: 1.4; }
-.mini.peak .v { color: var(--success); } .mini.crash .v { color: var(--warning); } .mini.cutoff .v { color: #7DD3FC; }
-.tips { list-style: none; margin: 14px 0 0; padding: 0; }
-.tip { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5; border-top: 1px solid rgba(255,255,255,0.05); }
+.mini { background: var(--paper-2); border: 1px solid var(--line); border-radius: 2px; padding: 16px; }
+.mini .k { font-family: var(--mono); font-size: 9.5px; font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.mini .v { font-family: var(--sans); font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin-top: 8px; font-variant-numeric: tabular-nums; line-height: 1.05; }
+.mini .s { font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+.mini.peak .v { color: var(--success); } .mini.crash .v { color: var(--warning); } .mini.cutoff .v { color: var(--accent); }
+.tips { list-style: none; margin: 16px 0 0; padding: 0; }
+.tip { display: flex; gap: 11px; align-items: flex-start; padding: 11px 0; font-size: 13px; color: var(--ink); line-height: 1.55; border-top: 1px solid var(--line-2); }
 .tip:first-child { border-top: 0; }
 .tip .ic { flex-shrink: 0; }
 
 /* ===== Daily bar ===== */
 .daily-top { display: flex; align-items: baseline; gap: 8px; }
-.daily-num { font-size: 38px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; color: var(--text-primary); line-height: 1; }
-.daily-of { font-family: var(--font-mono); font-size: 16px; color: var(--text-tertiary); }
-.daily-unit { font-size: 11px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-tertiary); margin-left: 2px; }
-.daily-active { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--caf); }
-.bar-track { position: relative; height: 14px; border-radius: 999px; background: rgba(255,255,255,0.06); margin: 14px 0 10px; overflow: hidden; }
-.bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; transition: width 0.5s cubic-bezier(0.22,1,0.36,1), background 0.4s; }
-.daily-msg { font-size: 13px; line-height: 1.5; }
+.daily-num { font-family: var(--sans); font-size: 44px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; color: var(--ink); line-height: 1; }
+.daily-of { font-family: var(--mono); font-size: 16px; color: var(--faint); }
+.daily-unit { font-family: var(--mono); font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-left: 2px; }
+.daily-active { margin-left: auto; font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; color: var(--accent); }
+.bar-track { position: relative; height: 12px; border-radius: 2px; background: var(--paper-2); border: 1px solid var(--line); margin: 16px 0 12px; overflow: hidden; }
+.bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; transition: width 1s cubic-bezier(0.34,1.3,0.5,1), background 0.4s; }
+.daily-msg { font-size: 13px; line-height: 1.55; color: var(--ink); }
 .daily-msg.good { color: var(--success); } .daily-msg.warn { color: var(--warning); } .daily-msg.bad { color: var(--danger); }
-.daily-note { font-size: 12px; color: var(--text-tertiary); margin-top: 8px; line-height: 1.5; }
+.daily-note { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--muted); margin-top: 10px; line-height: 1.6; }
 
 /* ===== Search + log ===== */
 .gm-input {
-  width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
-  background: rgba(0,0,0,0.28); color: var(--text-primary); font-family: inherit; font-size: 14px; outline: none;
+  width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 2px;
+  background: var(--paper-0); color: var(--ink); font-family: var(--mono); font-size: 13px; letter-spacing: 0.02em; outline: none;
   transition: border-color 0.2s, background 0.2s;
 }
-.gm-input::placeholder { color: var(--text-tertiary); }
-.gm-input:focus { border-color: rgba(201,163,107,0.45); background: rgba(0,0,0,0.36); }
-.results { list-style: none; margin: 12px 0 0; padding: 0; max-height: 320px; overflow-y: auto; }
+.gm-input::placeholder { color: var(--faint); }
+.gm-input:focus { border-color: var(--accent); }
+.results { list-style: none; margin: 14px 0 0; padding: 0; max-height: 320px; overflow-y: auto; }
 .result { display: flex; align-items: center; gap: 12px; padding: 11px 12px; margin-bottom: 6px;
-  background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
-.result:hover { background: rgba(201,163,107,0.10); border-color: rgba(201,163,107,0.30); }
+  background: var(--paper-2); border: 1px solid var(--line); border-radius: 2px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.result:hover { background: var(--accent-soft); border-color: var(--accent); }
 .result-emoji { font-size: 20px; flex-shrink: 0; width: 24px; text-align: center; }
-.result-name { flex: 1; font-size: 14px; color: var(--text-primary); }
-.result-cat { font-size: 11px; color: var(--text-tertiary); }
-.result-mg { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: #E7C690; font-variant-numeric: tabular-nums; }
-.result-mg small { color: var(--text-tertiary); font-weight: 600; }
-.results-empty { font-size: 12px; font-style: italic; color: var(--text-tertiary); padding: 10px 2px; }
-.custom-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); }
+.result-name { flex: 1; font-size: 14px; color: var(--ink); }
+.result-cat { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em; color: var(--muted); }
+.result-mg { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.result-mg small { color: var(--muted); font-weight: 400; }
+.results-empty { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--muted); padding: 10px 2px; }
+.custom-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line-2); }
 .custom-row .gm-input { flex: 1; min-width: 0; }
 .custom-row .mg-input { width: 92px; flex: none; }
-.gm-add { padding: 12px 18px; border: 0; border-radius: 12px; background: linear-gradient(180deg, #FFFFFF 0%, #E8E5DD 100%); color: #0A0A0B;
-  font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(0,0,0,0.35), 0 8px 22px rgba(0,0,0,0.25); transition: transform 0.1s, filter 0.15s; white-space: nowrap; }
+.gm-add { padding: 12px 20px; border: 0; border-radius: 2px; background: var(--accent); color: #fff;
+  font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  transition: transform 0.1s, filter 0.15s; white-space: nowrap; }
 .gm-add:hover { filter: brightness(1.06); transform: translateY(-1px); }
 .gm-add:active { transform: translateY(0); }
 
 /* ===== Log list ===== */
 .log-list { list-style: none; margin: 0; padding: 0; }
-.empty-state { text-align: center; font-size: 12px; font-style: italic; color: var(--text-tertiary); padding: 16px 0; }
+.empty-state { text-align: center; font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--muted); padding: 18px 0; }
 .log-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 8px;
-  background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; }
+  background: var(--paper-2); border: 1px solid var(--line); border-radius: 2px; }
 .log-emoji { font-size: 20px; flex-shrink: 0; }
 .log-main { flex: 1; min-width: 0; }
-.log-name { font-size: 14px; color: var(--text-primary); font-weight: 600; }
-.log-name b { font-family: var(--font-mono); color: #E7C690; font-weight: 700; margin-left: 6px; }
-.log-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); margin-top: 3px; line-height: 1.5; }
-.log-meta .sep { opacity: 0.4; margin: 0 5px; }
-.log-time { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); font-variant-numeric: tabular-nums; flex-shrink: 0; }
-.log-del { border: 0; background: transparent; color: var(--text-tertiary); font-size: 18px; cursor: pointer; padding: 0 2px; opacity: 0.5; transition: opacity 0.2s, color 0.2s; }
+.log-name { font-size: 14px; color: var(--ink); font-weight: 600; }
+.log-name b { font-family: var(--mono); color: var(--accent); font-weight: 700; margin-left: 6px; }
+.log-meta { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.02em; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+.log-meta .sep { color: var(--accent); margin: 0 6px; }
+.log-time { font-family: var(--mono); font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.log-del { border: 0; background: transparent; color: var(--faint); font-size: 18px; cursor: pointer; padding: 0 2px; opacity: 0.7; transition: opacity 0.2s, color 0.2s; }
 .log-del:hover { opacity: 1; color: var(--danger); }
 
 @media (max-width: 480px) {
-  body { padding: max(20px, env(safe-area-inset-top)) 14px 50px; }
+  body { padding: max(20px, env(safe-area-inset-top)) 14px 60px; }
   .gm-card { padding: 16px; }
   .curve-wrap svg { height: 200px; }
   .energy-desc { display: none; }
 }
+
+/* inline line-icons swapped in for emoji — inherit color via currentColor */
+.icon { display: inline-block; vertical-align: middle; }
+.result-emoji, .log-emoji { color: var(--muted); }
+.tip .ic { color: var(--accent); }
 </style>
 </head>
 <body>
 <div class="page">
 
-  <h1 class="dash-title">Caffeine</h1>
+  <div class="dash-head reveal">
+    <div class="dash-kicker"><span class="idx">[00]</span> Intake &amp; Timing</div>
+    <h1 class="dash-title">Caf<span class="thin">feine</span></h1>
+  </div>
 
   <!-- ENERGY CURVE -->
-  <div class="section">
-    <div class="section-title">Your Day</div>
+  <div class="section reveal">
+    <div class="sec-h"><span class="n">01</span><h2>Your Day</h2><div class="rule"></div><span class="meta">Energy Curve</span></div>
     <div class="gm-card">
       <div class="energy-head">
         <div class="ring">
@@ -225,10 +217,10 @@ body::after {
   </div>
 
   <!-- SMART TIMING + TIPS -->
-  <div class="section">
-    <div class="section-title">Smart Timing</div>
+  <div class="section reveal">
+    <div class="sec-h"><span class="n">02</span><h2>Smart Timing</h2><div class="rule"></div><span class="meta">Peak · Crash · Cutoff</span></div>
     <div class="gm-card">
-      <div class="tile-grid">
+      <div class="tile-grid stagger">
         <div class="mini peak"><div class="k">Most productive</div><div class="v" id="mPeak">—</div><div class="s" id="mPeakSub"></div></div>
         <div class="mini crash"><div class="k">You'll crash</div><div class="v" id="mCrash">—</div><div class="s" id="mCrashSub"></div></div>
         <div class="mini cutoff"><div class="k">Coffee cutoff</div><div class="v" id="mCutoff">—</div><div class="s" id="mCutoffSub"></div></div>
@@ -238,8 +230,8 @@ body::after {
   </div>
 
   <!-- DAILY INTAKE BAR -->
-  <div class="section">
-    <div class="section-title">Today</div>
+  <div class="section reveal">
+    <div class="sec-h"><span class="n">03</span><h2>Today</h2><div class="rule"></div><span class="meta">Daily Total</span></div>
     <div class="gm-card">
       <div class="daily-top">
         <span class="daily-num" id="dailyNum">0</span>
@@ -247,15 +239,15 @@ body::after {
         <span class="daily-unit">mg</span>
         <span class="daily-active" id="dailyActive"></span>
       </div>
-      <div class="bar-track"><div class="bar-fill" id="dailyFill" style="width:0%"></div></div>
+      <div class="bar-track"><div class="bar-fill" id="dailyFill" data-fill style="width:0%"></div></div>
       <div class="daily-msg good" id="dailyMsg">You haven't logged anything today.</div>
       <div class="daily-note" id="dailyNote"></div>
     </div>
   </div>
 
   <!-- LOG A DRINK -->
-  <div class="section">
-    <div class="section-title">Log a Drink</div>
+  <div class="section reveal">
+    <div class="sec-h"><span class="n">04</span><h2>Log a Drink</h2><div class="rule"></div><span class="meta">Search · Custom</span></div>
     <div class="gm-card">
       <input class="gm-input" id="search" type="text" placeholder="Search a drink… (coffee, monster, matcha…)" autocomplete="off">
       <ul class="results" id="results"></ul>
@@ -268,8 +260,8 @@ body::after {
   </div>
 
   <!-- TODAY'S LOG -->
-  <div class="section">
-    <div class="section-title">Logged Today</div>
+  <div class="section reveal">
+    <div class="sec-h"><span class="n">05</span><h2>Logged Today</h2><div class="rule"></div><span class="meta">Timeline</span></div>
     <div class="gm-card">
       <ul class="log-list" id="logList"></ul>
     </div>
@@ -283,6 +275,39 @@ body::after {
   const $ = (id) => document.getElementById(id);
   const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
   const gauss = (x,mu,sd) => Math.exp(-Math.pow(x-mu,2)/(2*sd*sd));
+
+  /* ============ Emoji → monochrome line-SVG icons ============ */
+  // 'e' values in the beverage data / tips arrays stay as emoji keys (used only
+  // for display); we convert to an inline SVG at render time. Icons inherit
+  // color via currentColor so they read grey/ink/accent per their container.
+  function svg(body, size){
+    size = size || 20;
+    return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+      + 'stroke-linecap="round" stroke-linejoin="round" width="'+size+'" height="'+size+'">'+body+'</svg>';
+  }
+  const ICONS = {
+    '☕': '<path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M8 3v2M11 3v2"/>',
+    '🧊': '<path d="M12 2v20M4 7l16 10M20 7L4 17M12 6l3-3M12 6l-3-3M12 18l3 3M12 18l-3 3"/>',
+    '🍵': '<path d="M5 13c0-5 5-8 14-8 0 9-4 13-9 13a5 5 0 0 1-5-5z"/><path d="M5 19c3-4 6-6 9-7"/>',
+    '⚡': '<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',
+    '💊': '<rect x="3" y="8" width="18" height="8" rx="4"/><path d="M12 8v8"/>',
+    '💧': '<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/>',
+    // icons added for emoji not in the base library (sensible monochrome lines):
+    '🥤': '<path d="M6 8h12l-1.2 12.2A2 2 0 0 1 14.8 22H9.2a2 2 0 0 1-2-1.8L6 8z"/><path d="M5 8l1-3h12l1 3M9 5l1-2h4l1 2"/>',
+    '🍫': '<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M12 3v18M5 9h14M5 15h14"/>',
+    '➕': '<path d="M12 5v14M5 12h14"/>',
+    '☀️': '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    '🌙': '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+    '⚠️': '<path d="M12 3L2 20h20L12 3z"/><path d="M12 10v5M12 18h0"/>',
+    '🚶': '<circle cx="13" cy="4.5" r="1.6"/><path d="M11 9l3 1 1 4M11 9l-2 5M14 14l2 4M14 14l-3 3-2 3"/>',
+    '🔋': '<rect x="2" y="8" width="17" height="8" rx="1.5"/><path d="M22 11v2M6 11v2M9.5 11v2M13 11v2"/>'
+  };
+  // Convert an emoji key to its inline SVG; falls back to coffee then raw text.
+  function emojiIcon(e, size){
+    if (ICONS[e]) return svg(ICONS[e], size);
+    if (e == null || e === '') return svg(ICONS['☕'], size);
+    return ICONS['☕'] ? svg(ICONS['☕'], size) : e;
+  }
 
   /* ============ Pharmacokinetics ============ */
   const HALF_LIFE_H = 5, PEAK_MIN = 45, FDA_MAX = 400;
@@ -541,7 +566,7 @@ body::after {
     tips.push(['💧','Drink a glass of water per caffeinated drink — dehydration mimics and worsens the crash.']);
     if(recovery!=null && recovery<34) tips.push(['🔋','WHOOP recovery is '+recovery+'% — low. Caffeine masks fatigue but won\'t repay sleep debt; keep today under '+dailyLimit()+' mg.']);
     const ul=$('tips'); ul.innerHTML='';
-    tips.forEach(([ic,txt])=>{ const li=document.createElement('li'); li.className='tip'; li.innerHTML='<span class="ic">'+ic+'</span><span>'+txt+'</span>'; ul.appendChild(li); });
+    tips.forEach(([ic,txt])=>{ const li=document.createElement('li'); li.className='tip'; li.innerHTML='<span class="ic">'+emojiIcon(ic,18)+'</span><span>'+txt+'</span>'; ul.appendChild(li); });
   }
 
   function renderDaily(){
@@ -555,7 +580,7 @@ body::after {
     fill.style.background=color;
     const msg=$('dailyMsg'); msg.className='daily-msg';
     if(total===0){ msg.classList.add('good'); msg.textContent="You haven't logged anything today."; }
-    else if(total>=limit){ msg.classList.add('bad'); msg.textContent="⚠️ That's over your limit for today — ease off the caffeine."; }
+    else if(total>=limit){ msg.classList.add('bad'); msg.innerHTML=emojiIcon('⚠️',16)+" That's over your limit for today — ease off the caffeine."; }
     else if(total>=target){ msg.classList.add('warn'); msg.textContent="Getting up there. "+(limit-total)+" mg until your ceiling."; }
     else { msg.classList.add('good'); msg.textContent="You're in a good range — "+(target-total)+" mg under your target."; }
     const parts=[];
@@ -571,7 +596,7 @@ body::after {
     if(tl.length===0){ const li=document.createElement('li'); li.className='empty-state'; li.textContent='No drinks logged today — search one above to start tracking.'; list.appendChild(li); return; }
     tl.forEach(l=>{
       const m=milestones(l); const li=document.createElement('li'); li.className='log-row';
-      li.innerHTML='<span class="log-emoji">'+(l.e||'☕')+'</span><div class="log-main"><div class="log-name">'+escapeHtml(l.n)+'<b>'+l.mg+' mg</b></div>'
+      li.innerHTML='<span class="log-emoji">'+emojiIcon(l.e||'☕',20)+'</span><div class="log-main"><div class="log-name">'+escapeHtml(l.n)+'<b>'+l.mg+' mg</b></div>'
         +'<div class="log-meta">Peaks '+fmtTime(m.peak)+'<span class="sep">•</span>Half gone '+fmtTime(m.half)+'<span class="sep">•</span>Cleared '+fmtTime(m.cleared)+'</div></div>'
         +'<span class="log-time">'+fmtTime(l.ts)+'</span><button class="log-del" type="button" aria-label="Delete">×</button>';
       li.querySelector('.log-del').addEventListener('click',()=>{ logs=logs.filter(x=>x.id!==l.id); saveJSON(LOGS_KEY,logs); renderAll(); });
@@ -590,7 +615,7 @@ body::after {
     items=items.slice(0, query?40:12); el.innerHTML='';
     if(items.length===0){ const li=document.createElement('li'); li.className='results-empty'; li.textContent='No match — add it as a custom drink below.'; el.appendChild(li); return; }
     items.forEach(d=>{ const li=document.createElement('li'); li.className='result';
-      li.innerHTML='<span class="result-emoji">'+(d.e||'☕')+'</span><span class="result-name">'+escapeHtml(d.n)+' <span class="result-cat">· '+d.c+'</span></span><span class="result-mg">'+d.mg+'<small> mg</small></span>';
+      li.innerHTML='<span class="result-emoji">'+emojiIcon(d.e||'☕',20)+'</span><span class="result-name">'+escapeHtml(d.n)+' <span class="result-cat">· '+d.c+'</span></span><span class="result-mg">'+d.mg+'<small> mg</small></span>';
       li.addEventListener('click',()=>{ logDrink(d); $('search').value=''; renderResults(''); }); el.appendChild(li); });
   }
   function addCustom(){
