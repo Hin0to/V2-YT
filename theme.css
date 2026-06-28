@@ -20,11 +20,11 @@
   /* type */
   --sans:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --mono:"Space Mono",ui-monospace,"SF Mono",Menlo,monospace;
-  --app-bg:linear-gradient(178deg,#F4F0E7 0%,#EFEADF 46%,#E7E0D4 72%,#2E2A22 92%,#16130E 100%);
+  --app-bg:linear-gradient(178deg,#F4F0E7 0%,#EFEADF 55%,#E7E0D4 100%);
 }
 
 *{box-sizing:border-box}
-html{background:#16130E}
+html{background:#E7E0D4}
 body{
   margin:0; color:var(--ink); font-family:var(--sans);
   -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
