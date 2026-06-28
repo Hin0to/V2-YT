@@ -90,18 +90,21 @@ features just fail softly.
 
 1. **developer.whoop.com** → create an app.
 2. Set its **Redirect URI** to exactly `https://your-app.vercel.app/api/whoop-callback`
-   (your real Vercel domain).
-3. Put your app's **Client ID** in [`health.html`](health.html) (`const CLIENT_ID = '...'`)
-   and add the two env vars:
+   (your real Vercel domain — must match character-for-character).
+3. Give the app these **scopes**: `read:recovery`, `read:sleep`, `read:workout`,
+   `read:cycles`, `read:profile`, `read:body_measurement`, `offline`.
+4. Add the two env vars (no code editing — the Client ID is read from here):
 
    | Variable | Value |
    |---|---|
    | `WHOOP_CLIENT_ID` | your WHOOP app's Client ID |
    | `WHOOP_CLIENT_SECRET` | your WHOOP app's Client Secret (**secret**) |
 
-4. Open the site → Health page → **Connect WHOOP**.
+5. Redeploy, then open the site → Health page → **Connect WHOOP**.
 
-> The callback auto-detects the domain, so no `WHOOP_REDIRECT_URI` env var is needed.
+> The flow starts at `/api/whoop-authorize` (uses `WHOOP_CLIENT_ID` from env) and the
+> callback auto-detects the domain — so the authorize and token-exchange redirect URIs
+> always match, and no `WHOOP_REDIRECT_URI` env var is needed.
 
 ---
 
